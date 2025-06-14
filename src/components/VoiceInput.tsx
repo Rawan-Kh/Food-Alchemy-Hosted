@@ -4,8 +4,43 @@ import { Button } from '@/components/ui/button';
 import { Mic, MicOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
+// Type declarations for Web Speech API
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
+
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+  resultIndex: number;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+  message: string;
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  start(): void;
+  stop(): void;
+  onresult: (event: SpeechRecognitionEvent) => void;
+  onerror: (event: SpeechRecognitionErrorEvent) => void;
+  onend: () => void;
+}
+
+interface ParsedIngredient {
+  name: string;
+  quantity?: number;
+  unit?: string;
+}
+
 interface VoiceInputProps {
-  onIngredientsDetected: (ingredients: string[]) => void;
+  onIngredientsDetected: (ingredients: ParsedIngredient[]) => void;
   isListening: boolean;
   setIsListening: (listening: boolean) => void;
 }
@@ -20,29 +55,32 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
 
   useEffect(() => {
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       const speechRecognition = new SpeechRecognition();
       
       speechRecognition.continuous = true;
       speechRecognition.interimResults = false;
       speechRecognition.lang = 'en-US';
 
-      speechRecognition.onresult = (event) => {
+      speechRecognition.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = event.results[event.results.length - 1][0].transcript;
         console.log('Voice input received:', transcript);
         
-        // Parse ingredients from transcript
+        // Parse ingredients with quantity and unit from transcript
         const ingredients = parseIngredientsFromText(transcript);
         if (ingredients.length > 0) {
           onIngredientsDetected(ingredients);
+          const ingredientNames = ingredients.map(ing => 
+            `${ing.quantity || ''} ${ing.unit || ''} ${ing.name}`.trim()
+          );
           toast({
             title: "Ingredients detected!",
-            description: `Found: ${ingredients.join(', ')}`,
+            description: `Found: ${ingredientNames.join(', ')}`,
           });
         }
       };
 
-      speechRecognition.onerror = (event) => {
+      speechRecognition.onerror = (event: SpeechRecognitionErrorEvent) => {
         console.error('Speech recognition error:', event.error);
         setIsListening(false);
         toast({
@@ -60,8 +98,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
     }
   }, [onIngredientsDetected, setIsListening, toast]);
 
-  const parseIngredientsFromText = (text: string): string[] => {
-    // Simple ingredient parsing - look for common food words
+  const parseIngredientsFromText = (text: string): ParsedIngredient[] => {
     const commonIngredients = [
       'tomato', 'tomatoes', 'onion', 'onions', 'garlic', 'chicken', 'beef', 'pork',
       'rice', 'pasta', 'cheese', 'milk', 'eggs', 'bread', 'flour', 'sugar',
@@ -70,16 +107,70 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
       'lemon', 'lime', 'apple', 'banana', 'orange', 'fish', 'salmon', 'tuna'
     ];
 
-    const words = text.toLowerCase().split(/[\s,]+/);
-    const foundIngredients: string[] = [];
+    const units = [
+      'cups?', 'cup', 'tablespoons?', 'tbsp', 'teaspoons?', 'tsp', 'pounds?', 'lbs?', 'lb',
+      'ounces?', 'oz', 'grams?', 'g', 'kilograms?', 'kg', 'liters?', 'l', 'milliliters?', 'ml',
+      'pieces?', 'pcs?', 'cloves?', 'slices?', 'cans?', 'bottles?', 'bags?'
+    ];
 
+    // Regex to match patterns like "2 cups flour", "3 tomatoes", "1 pound chicken"
+    const ingredientPattern = new RegExp(
+      `(\\d+(?:\\.\\d+)?|\\w+)\\s+(${units.join('|')})\\s+(\\w+(?:\\s+\\w+)*)`,
+      'gi'
+    );
+
+    const foundIngredients: ParsedIngredient[] = [];
+    const processedIngredients = new Set<string>();
+
+    // First, try to match quantity + unit + ingredient patterns
+    let match;
+    while ((match = ingredientPattern.exec(text)) !== null) {
+      const [, quantityStr, unit, ingredientName] = match;
+      const quantity = parseFloat(quantityStr) || 1;
+      const normalizedIngredient = ingredientName.toLowerCase().trim();
+      
+      if (!processedIngredients.has(normalizedIngredient)) {
+        foundIngredients.push({
+          name: normalizedIngredient,
+          quantity: quantity,
+          unit: unit.toLowerCase().replace(/s$/, '') // Remove plural 's'
+        });
+        processedIngredients.add(normalizedIngredient);
+      }
+    }
+
+    // Then, try to match just quantity + ingredient (without unit)
+    const quantityPattern = new RegExp(`(\\d+(?:\\.\\d+)?)\\s+(\\w+(?:\\s+\\w+)*)`, 'gi');
+    let quantityMatch;
+    while ((quantityMatch = quantityPattern.exec(text)) !== null) {
+      const [, quantityStr, ingredientName] = quantityMatch;
+      const quantity = parseFloat(quantityStr);
+      const normalizedIngredient = ingredientName.toLowerCase().trim();
+      
+      if (!processedIngredients.has(normalizedIngredient) && 
+          commonIngredients.some(common => 
+            normalizedIngredient.includes(common) || common.includes(normalizedIngredient)
+          )) {
+        foundIngredients.push({
+          name: normalizedIngredient,
+          quantity: quantity
+        });
+        processedIngredients.add(normalizedIngredient);
+      }
+    }
+
+    // Finally, match standalone ingredients without quantity/unit
     commonIngredients.forEach(ingredient => {
-      if (text.toLowerCase().includes(ingredient)) {
-        foundIngredients.push(ingredient);
+      const normalizedIngredient = ingredient.toLowerCase();
+      if (text.toLowerCase().includes(ingredient) && !processedIngredients.has(normalizedIngredient)) {
+        foundIngredients.push({
+          name: ingredient
+        });
+        processedIngredients.add(normalizedIngredient);
       }
     });
 
-    return [...new Set(foundIngredients)]; // Remove duplicates
+    return foundIngredients;
   };
 
   const toggleListening = () => {
@@ -100,7 +191,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
       setIsListening(true);
       toast({
         title: "Listening...",
-        description: "Speak your ingredients now",
+        description: "Say ingredients with quantity and unit (e.g., '2 cups flour, 3 tomatoes')",
       });
     }
   };

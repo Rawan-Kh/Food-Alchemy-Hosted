@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { VoiceInput } from '@/components/VoiceInput';
 import { IngredientManager, Ingredient } from '@/components/IngredientManager';
@@ -9,6 +8,12 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ChefHat, Package, Mic, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+interface ParsedIngredient {
+  name: string;
+  quantity?: number;
+  unit?: string;
+}
 
 const Index = () => {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
@@ -160,13 +165,13 @@ const Index = () => {
     }
   };
 
-  const handleVoiceIngredientsDetected = (detectedIngredients: string[]) => {
+  const handleVoiceIngredientsDetected = (detectedIngredients: ParsedIngredient[]) => {
     console.log('Voice detected ingredients:', detectedIngredients);
-    detectedIngredients.forEach(ingredientName => {
+    detectedIngredients.forEach(parsedIngredient => {
       handleAddIngredient({
-        name: ingredientName,
-        quantity: 1,
-        unit: 'pcs',
+        name: parsedIngredient.name,
+        quantity: parsedIngredient.quantity || 0, // Set to 0 if not provided to allow editing
+        unit: parsedIngredient.unit || 'pcs',
         expiryDate: ''
       });
     });
