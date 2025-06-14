@@ -73,6 +73,16 @@ export const IngredientManager: React.FC<IngredientManagerProps> = ({
     return 'secondary';
   };
 
+  const handleRemoveIngredient = (ingredientId: string) => {
+    console.log('Removing ingredient with ID:', ingredientId);
+    onRemoveIngredient(ingredientId);
+  };
+
+  const handleQuantityUpdate = (ingredientId: string, newQuantity: number) => {
+    console.log('Updating quantity for ingredient ID:', ingredientId, 'to:', newQuantity);
+    onUpdateQuantity(ingredientId, newQuantity);
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -151,13 +161,13 @@ export const IngredientManager: React.FC<IngredientManagerProps> = ({
               {ingredients.map((ingredient) => {
                 const daysUntilExpiry = getDaysUntilExpiry(ingredient.expiryDate);
                 return (
-                  <div key={ingredient.id} className="border rounded-lg p-4 space-y-2">
+                  <div key={`ingredient-${ingredient.id}`} className="border rounded-lg p-4 space-y-2">
                     <div className="flex justify-between items-start">
                       <h3 className="font-semibold capitalize">{ingredient.name}</h3>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => onRemoveIngredient(ingredient.id)}
+                        onClick={() => handleRemoveIngredient(ingredient.id)}
                         className="text-red-500 hover:text-red-700"
                       >
                         <Trash className="w-4 h-4" />
@@ -170,7 +180,7 @@ export const IngredientManager: React.FC<IngredientManagerProps> = ({
                         min="0"
                         step="0.1"
                         value={ingredient.quantity}
-                        onChange={(e) => onUpdateQuantity(ingredient.id, parseFloat(e.target.value) || 0)}
+                        onChange={(e) => handleQuantityUpdate(ingredient.id, parseFloat(e.target.value) || 0)}
                         className="w-20"
                       />
                       <span className="text-sm text-gray-600">{ingredient.unit}</span>

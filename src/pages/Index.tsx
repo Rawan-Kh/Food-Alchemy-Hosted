@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { VoiceInput } from '@/components/VoiceInput';
 import { IngredientManager, Ingredient } from '@/components/IngredientManager';
@@ -14,6 +15,11 @@ interface ParsedIngredient {
   quantity?: number;
   unit?: string;
 }
+
+// Generate unique ID with timestamp and random component
+const generateUniqueId = () => {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+};
 
 const Index = () => {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
@@ -96,17 +102,20 @@ const Index = () => {
   const handleAddIngredient = (newIngredient: Omit<Ingredient, 'id' | 'dateAdded'>) => {
     const ingredient: Ingredient = {
       ...newIngredient,
-      id: Date.now().toString(),
+      id: generateUniqueId(),
       dateAdded: new Date().toISOString()
     };
+    console.log('Adding ingredient with ID:', ingredient.id);
     setIngredients(prev => [...prev, ingredient]);
   };
 
   const handleRemoveIngredient = (id: string) => {
+    console.log('Removing ingredient with ID:', id);
     setIngredients(prev => prev.filter(ingredient => ingredient.id !== id));
   };
 
   const handleUpdateQuantity = (id: string, newQuantity: number) => {
+    console.log('Updating quantity for ingredient ID:', id, 'to:', newQuantity);
     setIngredients(prev => 
       prev.map(ingredient => 
         ingredient.id === id ? { ...ingredient, quantity: newQuantity } : ingredient
@@ -117,7 +126,7 @@ const Index = () => {
   const handleAddRecipe = (newRecipe: Omit<Recipe, 'id' | 'dateAdded'>) => {
     const recipe: Recipe = {
       ...newRecipe,
-      id: Date.now().toString(),
+      id: generateUniqueId(),
       dateAdded: new Date().toISOString()
     };
     setRecipes(prev => [...prev, recipe]);
