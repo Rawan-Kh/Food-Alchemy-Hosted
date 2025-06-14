@@ -1,4 +1,3 @@
-
 import FirecrawlApp from '@mendable/firecrawl-js';
 
 interface Recipe {
@@ -62,7 +61,7 @@ export class WebScrapingService {
       }
 
       console.log('Scraping successful, parsing recipe data');
-      const recipe = this.parseRecipeFromContent(scrapeResponse.data, url);
+      const recipe = this.parseRecipeFromContent(scrapeResponse, url);
       
       if (!recipe) {
         return { success: false, error: 'Could not extract recipe data from the webpage' };
@@ -78,9 +77,9 @@ export class WebScrapingService {
     }
   }
 
-  private static parseRecipeFromContent(data: any, url: string): Recipe | null {
+  private static parseRecipeFromContent(scrapeResponse: any, url: string): Recipe | null {
     try {
-      const content = data.markdown || data.html || '';
+      const content = scrapeResponse.markdown || scrapeResponse.html || '';
       
       // Extract title (recipe name)
       const titleMatch = content.match(/^#\s+(.+)$/m) || content.match(/<h1[^>]*>([^<]+)<\/h1>/i);
