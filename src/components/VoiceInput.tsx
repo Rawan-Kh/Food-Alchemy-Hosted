@@ -2,35 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-// Type declarations for Web Speech API
-declare global {
-  interface Window {
-    SpeechRecognition: new () => SpeechRecognition;
-    webkitSpeechRecognition: new () => SpeechRecognition;
-  }
-}
-
-interface SpeechRecognitionEvent extends Event {
-  results: SpeechRecognitionResultList;
-  resultIndex: number;
-}
-
-interface SpeechRecognitionErrorEvent extends Event {
-  error: string;
-  message: string;
-}
-
-interface SpeechRecognition extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  start(): void;
-  stop(): void;
-  onresult: (event: SpeechRecognitionEvent) => void;
-  onerror: (event: SpeechRecognitionErrorEvent) => void;
-  onend: () => void;
-}
+import { SpeechRecognition, SpeechRecognitionEvent, SpeechRecognitionErrorEvent } from '@/utils/speechTypes';
 
 interface ParsedIngredient {
   name: string;
@@ -53,47 +25,49 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({
   const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
 
   useEffect(() => {
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const speechRecognition = new SpeechRecognition();
-      
-      speechRecognition.continuous = true;
-      speechRecognition.interimResults = false;
-      speechRecognition.lang = 'en-US';
-
-      speechRecognition.onresult = (event: SpeechRecognitionEvent) => {
-        const transcript = event.results[event.results.length - 1][0].transcript;
-        console.log('Voice input received:', transcript);
+    if (window.webkitSpeechRecognition || window.SpeechRecognition) {
+      const SpeechRecognitionConstructor = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognitionConstructor) {
+        const speechRecognition = new SpeechRecognitionConstructor();
         
-        // Parse ingredients with quantity and unit from transcript
-        const ingredients = parseIngredientsFromText(transcript);
-        if (ingredients.length > 0) {
-          onIngredientsDetected(ingredients);
-          const ingredientNames = ingredients.map(ing => 
-            `${ing.quantity || ''} ${ing.unit || ''} ${ing.name}`.trim()
-          );
+        speechRecognition.continuous = true;
+        speechRecognition.interimResults = false;
+        speechRecognition.lang = 'en-US';
+
+        speechRecognition.onresult = (event: SpeechRecognitionEvent) => {
+          const transcript = event.results[event.results.length - 1][0].transcript;
+          console.log('Voice input received:', transcript);
+          
+          // Parse ingredients with quantity and unit from transcript
+          const ingredients = parseIngredientsFromText(transcript);
+          if (ingredients.length > 0) {
+            onIngredientsDetected(ingredients);
+            const ingredientNames = ingredients.map(ing => 
+              `${ing.quantity || ''} ${ing.unit || ''} ${ing.name}`.trim()
+            );
+            toast({
+              title: "Ingredients detected!",
+              description: `Found: ${ingredientNames.join(', ')}`,
+            });
+          }
+        };
+
+        speechRecognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+          console.error('Speech recognition error:', event.error);
+          setIsListening(false);
           toast({
-            title: "Ingredients detected!",
-            description: `Found: ${ingredientNames.join(', ')}`,
+            title: "Voice recognition error",
+            description: "Please try again",
+            variant: "destructive",
           });
-        }
-      };
+        };
 
-      speechRecognition.onerror = (event: SpeechRecognitionErrorEvent) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-        toast({
-          title: "Voice recognition error",
-          description: "Please try again",
-          variant: "destructive",
-        });
-      };
+        speechRecognition.onend = () => {
+          setIsListening(false);
+        };
 
-      speechRecognition.onend = () => {
-        setIsListening(false);
-      };
-
-      setRecognition(speechRecognition);
+        setRecognition(speechRecognition);
+      }
     }
   }, [onIngredientsDetected, setIsListening, toast]);
 
