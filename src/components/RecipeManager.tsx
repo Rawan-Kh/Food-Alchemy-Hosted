@@ -204,7 +204,7 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
                 <Plus className="w-4 h-4 mr-2" />
                 Add Recipe
               </Button>
-              <RecipeScrapingDialog onAddRecipe={onAddRecipe} />
+              <RecipeScrapingDialog onRecipeScraped={onAddRecipe} />
               <FreeRecipeScrapingDialog onRecipeScraped={onAddRecipe} />
             </div>
           </CardTitle>
