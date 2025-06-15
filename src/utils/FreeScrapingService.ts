@@ -111,20 +111,21 @@ export class FreeScrapingService {
       // Fallback to HTML parsing
       const name = this.extractRecipeName(doc);
       const description = this.extractDescription(doc);
-      const ingredients = this.extractIngredients(doc);
+      const rawIngredients = this.extractIngredients(doc);
+      const cleanedIngredients = this.cleanAndDeduplicateIngredients(rawIngredients);
       const instructions = this.extractInstructions(doc);
       const cookingTime = this.extractCookingTime(doc);
       const servings = this.extractServings(doc);
       
       // Validate that we have essential data
-      if (!name || ingredients.length === 0) {
+      if (!name || cleanedIngredients.length === 0) {
         return null;
       }
       
       return {
         name,
         description,
-        ingredients,
+        ingredients: cleanedIngredients,
         instructions,
         cookingTime,
         servings,
@@ -136,6 +137,56 @@ export class FreeScrapingService {
     }
   }
 
+  private static cleanAndDeduplicateIngredients(ingredients: { name: string; quantity: number; unit: string }[]): { name: string; quantity: number; unit: string }[] {
+    const cleanedIngredients: { name: string; quantity: number; unit: string }[] = [];
+    const seenIngredients = new Set<string>();
+
+    for (const ingredient of ingredients) {
+      // Clean the ingredient name
+      let cleanName = ingredient.name
+        .toLowerCase()
+        .trim()
+        // Remove extra whitespace
+        .replace(/\s+/g, ' ')
+        // Remove common prefixes/suffixes that might cause duplicates
+        .replace(/^(fresh|dried|chopped|minced|sliced|diced|ground|whole|organic)\s+/i, '')
+        .replace(/\s+(fresh|dried|chopped|minced|sliced|diced|ground|whole|organic)$/i, '')
+        // Remove parenthetical information that might cause duplicates
+        .replace(/\s*\([^)]*\)/g, '')
+        // Remove brand names and specific product details
+        .replace(/\s*(brand|®|™)/gi, '')
+        .trim();
+
+      // Skip if empty after cleaning
+      if (!cleanName) continue;
+
+      // Create a normalized key for deduplication
+      const normalizedKey = cleanName.replace(/[^a-z0-9]/g, '');
+
+      // Skip duplicates
+      if (seenIngredients.has(normalizedKey)) {
+        console.log(`Skipping duplicate ingredient: ${ingredient.name} (normalized: ${cleanName})`);
+        continue;
+      }
+
+      seenIngredients.add(normalizedKey);
+
+      // Format the name properly (capitalize first letter of each word)
+      const formattedName = cleanName
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+
+      cleanedIngredients.push({
+        name: formattedName,
+        quantity: ingredient.quantity || 1,
+        unit: ingredient.unit || 'pcs'
+      });
+    }
+
+    return cleanedIngredients.slice(0, 20); // Limit to 20 ingredients max
+  }
+
   private static extractRecipeFromJsonLd(doc: Document): Recipe | null {
     try {
       const scripts = doc.querySelectorAll('script[type="application/ld+json"]');
@@ -145,10 +196,13 @@ export class FreeScrapingService {
         const recipe = this.findRecipeInJsonLd(jsonData);
         
         if (recipe) {
+          const rawIngredients = this.parseJsonLdIngredients(recipe.recipeIngredient || []);
+          const cleanedIngredients = this.cleanAndDeduplicateIngredients(rawIngredients);
+          
           return {
             name: recipe.name || 'Scraped Recipe',
             description: recipe.description || 'Recipe scraped from web',
-            ingredients: this.parseJsonLdIngredients(recipe.recipeIngredient || []),
+            ingredients: cleanedIngredients,
             instructions: this.parseJsonLdInstructions(recipe.recipeInstructions || []),
             cookingTime: this.parseJsonLdTime(recipe.cookTime || recipe.totalTime) || 30,
             servings: parseInt(recipe.recipeYield) || 4,
@@ -277,7 +331,7 @@ export class FreeScrapingService {
       }
     }
     
-    return ingredients.slice(0, 20);
+    return ingredients;
   }
 
   private static extractInstructions(doc: Document): string[] {
