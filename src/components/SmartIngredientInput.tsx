@@ -21,6 +21,7 @@ interface SmartIngredientInputProps {
     quantity: number;
     unit: string;
     expiryDate: string;
+    category: string;
   }>) => void;
   isListening: boolean;
   setIsListening: (listening: boolean) => void;
@@ -78,7 +79,7 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
     name: string,
     quantity: number = 1,
     unit: string = 'pcs',
-    category?: string
+    category: string = 'other'
   ) => {
     const newIngredient: PendingIngredient = {
       id: generateUniqueId(),
@@ -98,7 +99,8 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
       addPendingIngredient(
         ingredient.name,
         ingredient.quantity || 1,
-        ingredient.unit || 'pcs'
+        ingredient.unit || 'pcs',
+        'other' // Default category for manually typed ingredients
       );
     });
 
@@ -114,7 +116,7 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
       suggestion.name,
       suggestion.defaultQuantity,
       suggestion.defaultUnit,
-      suggestion.category
+      suggestion.category // Use the category from the suggestion
     );
     setTextInput('');
     toast({
@@ -135,7 +137,8 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
       addPendingIngredient(
         ingredient.name,
         ingredient.quantity || 1,
-        ingredient.unit || 'pcs'
+        ingredient.unit || 'pcs',
+        'other' // Default category for voice-detected ingredients
       );
     });
     toast({
@@ -161,7 +164,8 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
       name: ingredient.name,
       quantity: ingredient.quantity,
       unit: ingredient.unit,
-      expiryDate: ingredient.expiryDate || ''
+      expiryDate: ingredient.expiryDate || '',
+      category: ingredient.category || 'other'
     }));
 
     onAddIngredients(ingredientsToAdd);

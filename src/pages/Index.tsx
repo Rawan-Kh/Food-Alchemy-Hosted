@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { SmartIngredientInput } from '@/components/SmartIngredientInput';
 import { CategorizedIngredientManager, Ingredient } from '@/components/CategorizedIngredientManager';
@@ -100,11 +101,11 @@ const Index = () => {
     quantity: number;
     unit: string;
     expiryDate: string;
+    category: string;
   }>) => {
     const ingredientsWithIds = newIngredients.map(ingredient => ({
       ...ingredient,
       id: generateUniqueId(),
-      category: 'other', // Default category for bulk-added ingredients
       dateAdded: new Date().toISOString()
     }));
     
