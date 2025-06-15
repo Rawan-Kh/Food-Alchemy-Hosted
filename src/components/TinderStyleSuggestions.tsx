@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -91,8 +92,6 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
   const [isAnimating, setIsAnimating] = useState(false);
   const [rejectedSuggestions, setRejectedSuggestions] = useState<Set<string>>(new Set());
   const cardRef = useRef<HTMLDivElement>(null);
-  const startXRef = useRef<number>(0);
-  const currentXRef = useRef<number>(0);
 
   useEffect(() => {
     if (!input.trim()) {
@@ -119,6 +118,7 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
   }, [input, rejectedSuggestions, currentIngredients]);
 
   const handleAccept = (suggestion: IngredientSuggestion) => {
+    console.log('Accept button clicked for:', suggestion.name);
     setSwipeDirection('right');
     setIsAnimating(true);
     
@@ -129,6 +129,7 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
   };
 
   const handleReject = (suggestion: IngredientSuggestion) => {
+    console.log('Reject button clicked for:', suggestion.name);
     setSwipeDirection('left');
     setIsAnimating(true);
     
@@ -147,77 +148,6 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
     }, 100);
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    startXRef.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!cardRef.current || isAnimating) return;
-    
-    currentXRef.current = e.touches[0].clientX;
-    const deltaX = currentXRef.current - startXRef.current;
-    
-    cardRef.current.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.1}deg)`;
-    cardRef.current.style.opacity = String(1 - Math.abs(deltaX) / 300);
-  };
-
-  const handleTouchEnd = () => {
-    if (!cardRef.current || isAnimating) return;
-    
-    const deltaX = currentXRef.current - startXRef.current;
-    const threshold = 100;
-    
-    if (Math.abs(deltaX) > threshold && currentSuggestions[currentIndex]) {
-      if (deltaX > 0) {
-        handleAccept(currentSuggestions[currentIndex]);
-      } else {
-        handleReject(currentSuggestions[currentIndex]);
-      }
-    } else {
-      // Reset position
-      cardRef.current.style.transform = 'translateX(0px) rotate(0deg)';
-      cardRef.current.style.opacity = '1';
-    }
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    startXRef.current = e.clientX;
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!cardRef.current || isAnimating) return;
-    
-    currentXRef.current = e.clientX;
-    const deltaX = currentXRef.current - startXRef.current;
-    
-    cardRef.current.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.1}deg)`;
-    cardRef.current.style.opacity = String(1 - Math.abs(deltaX) / 300);
-  };
-
-  const handleMouseUp = () => {
-    document.removeEventListener('mousemove', handleMouseMove);
-    document.removeEventListener('mouseup', handleMouseUp);
-    
-    if (!cardRef.current || isAnimating) return;
-    
-    const deltaX = currentXRef.current - startXRef.current;
-    const threshold = 100;
-    
-    if (Math.abs(deltaX) > threshold && currentSuggestions[currentIndex]) {
-      if (deltaX > 0) {
-        handleAccept(currentSuggestions[currentIndex]);
-      } else {
-        handleReject(currentSuggestions[currentIndex]);
-      }
-    } else {
-      // Reset position
-      cardRef.current.style.transform = 'translateX(0px) rotate(0deg)';
-      cardRef.current.style.opacity = '1';
-    }
-  };
-
   if (currentSuggestions.length === 0 || currentIndex >= currentSuggestions.length) {
     return null;
   }
@@ -228,7 +158,7 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
   return (
     <div className={cn("mt-4", className)}>
       <div className="text-sm text-gray-600 mb-3 text-center font-medium">
-        Swipe or tap to choose • {remainingCount} suggestion{remainingCount !== 1 ? 's' : ''} remaining
+        {remainingCount} suggestion{remainingCount !== 1 ? 's' : ''} remaining
       </div>
       
       <div className="relative h-80 flex items-center justify-center">
@@ -250,7 +180,7 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
         <Card
           ref={cardRef}
           className={cn(
-            "relative w-72 h-64 shadow-xl cursor-grab active:cursor-grabbing transition-all duration-300 z-20 bg-white border-2",
+            "relative w-72 h-64 shadow-xl transition-all duration-300 z-20 bg-white border-2",
             isAnimating && swipeDirection === 'right' && "animate-pulse border-green-400",
             isAnimating && swipeDirection === 'left' && "animate-pulse border-red-400"
           )}
@@ -262,10 +192,6 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
               : 'translateX(0px) rotate(0deg)',
             opacity: isAnimating ? 0 : 1,
           }}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          onMouseDown={handleMouseDown}
         >
           <CardContent className="p-6 h-full flex flex-col justify-between">
             <div className="text-center">
@@ -301,7 +227,11 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
                 variant="outline"
                 size="lg"
                 className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
-                onClick={() => handleReject(currentSuggestion)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleReject(currentSuggestion);
+                }}
                 disabled={isAnimating}
               >
                 <X className="w-5 h-5 mr-2" />
@@ -310,7 +240,11 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
               <Button
                 size="lg"
                 className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                onClick={() => handleAccept(currentSuggestion)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleAccept(currentSuggestion);
+                }}
                 disabled={isAnimating}
               >
                 <Heart className="w-5 h-5 mr-2" />
@@ -323,7 +257,7 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
       
       <div className="text-center mt-4">
         <div className="text-xs text-gray-500">
-          💡 Tip: Swipe right to add, swipe left to pass
+          💡 Tip: Click "Add" to add ingredient to your pantry
         </div>
       </div>
     </div>
