@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Plus, Search, ChefHat, Clock, Users, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Ingredient } from './IngredientManager';
-import { RecipeScrapingDialog } from './RecipeScrapingDialog';
 import { FreeRecipeScrapingDialog } from './FreeRecipeScrapingDialog';
 
 export interface Recipe {
@@ -204,7 +203,6 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
                 <Plus className="w-4 h-4 mr-2" />
                 Add Recipe
               </Button>
-              <RecipeScrapingDialog onRecipeScraped={onAddRecipe} />
               <FreeRecipeScrapingDialog onRecipeScraped={onAddRecipe} />
             </div>
           </CardTitle>
