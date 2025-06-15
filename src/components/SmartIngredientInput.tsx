@@ -1,9 +1,8 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { IngredientSuggestions } from './IngredientSuggestions';
+import { TinderStyleSuggestions } from './TinderStyleSuggestions';
 import { IngredientEditor, PendingIngredient } from './IngredientEditor';
 import { VoiceInput } from './VoiceInput';
 import { Plus, Sparkles } from 'lucide-react';
@@ -222,7 +221,7 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
               </div>
             </div>
 
-            <IngredientSuggestions
+            <TinderStyleSuggestions
               input={textInput}
               onAcceptSuggestion={handleAcceptSuggestion}
               onRejectSuggestion={handleRejectSuggestion}
