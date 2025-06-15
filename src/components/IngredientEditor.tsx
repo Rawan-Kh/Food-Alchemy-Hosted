@@ -29,11 +29,6 @@ const commonUnits = [
   'cloves', 'slices', 'bunches', 'cans', 'bottles', 'packs'
 ];
 
-const categories = [
-  'vegetables', 'fruits', 'meat', 'dairy', 'grains', 'spices', 
-  'herbs', 'oils', 'condiments', 'nuts', 'seafood', 'other'
-];
-
 export const IngredientEditor: React.FC<IngredientEditorProps> = ({
   ingredients,
   onUpdateIngredient,
@@ -83,92 +78,77 @@ export const IngredientEditor: React.FC<IngredientEditorProps> = ({
               className="flex items-center justify-between p-3 border rounded-lg bg-gray-50"
             >
               <div className="flex items-center gap-3 flex-1">
-                <div className="flex flex-col gap-1 min-w-0 flex-1">
-                  <span className="font-medium truncate">{ingredient.name}</span>
-                  
-                  {editingId === ingredient.id ? (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Input
-                        type="number"
-                        value={ingredient.quantity}
-                        onChange={(e) =>
-                          onUpdateIngredient(ingredient.id, {
-                            quantity: parseFloat(e.target.value) || 0
-                          })
-                        }
-                        className="w-20"
-                        min="0"
-                        step="0.1"
-                      />
-                      <Select
-                        value={ingredient.unit}
-                        onValueChange={(value) =>
-                          onUpdateIngredient(ingredient.id, { unit: value })
-                        }
-                      >
-                        <SelectTrigger className="w-24">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {commonUnits.map((unit) => (
-                            <SelectItem key={unit} value={unit}>
-                              {unit}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Select
-                        value={ingredient.category || 'other'}
-                        onValueChange={(value) =>
-                          onUpdateIngredient(ingredient.id, { category: value })
-                        }
-                      >
-                        <SelectTrigger className="w-32">
-                          <SelectValue placeholder="Category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((category) => (
-                            <SelectItem key={category} value={category}>
-                              {category.charAt(0).toUpperCase() + category.slice(1)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setEditingId(null)}
-                        className="text-green-600 hover:text-green-700"
-                      >
-                        <Check className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="secondary">
-                        {ingredient.quantity} {ingredient.unit}
-                      </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {ingredient.category ? ingredient.category.charAt(0).toUpperCase() + ingredient.category.slice(1) : 'Other'}
-                      </Badge>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setEditingId(ingredient.id)}
-                        className="text-blue-600 hover:text-blue-700"
-                      >
-                        <Edit3 className="w-3 h-3" />
-                      </Button>
-                    </div>
+                <div className="flex flex-col gap-1">
+                  <span className="font-medium">{ingredient.name}</span>
+                  {ingredient.category && (
+                    <Badge variant="outline" className="text-xs w-fit">
+                      {ingredient.category}
+                    </Badge>
                   )}
                 </div>
+                
+                {editingId === ingredient.id ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      value={ingredient.quantity}
+                      onChange={(e) =>
+                        onUpdateIngredient(ingredient.id, {
+                          quantity: parseFloat(e.target.value) || 0
+                        })
+                      }
+                      className="w-20"
+                      min="0"
+                      step="0.1"
+                    />
+                    <Select
+                      value={ingredient.unit}
+                      onValueChange={(value) =>
+                        onUpdateIngredient(ingredient.id, { unit: value })
+                      }
+                    >
+                      <SelectTrigger className="w-24">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {commonUnits.map((unit) => (
+                          <SelectItem key={unit} value={unit}>
+                            {unit}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setEditingId(null)}
+                      className="text-green-600 hover:text-green-700"
+                    >
+                      <Check className="w-4 h-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Badge variant="secondary">
+                      {ingredient.quantity} {ingredient.unit}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setEditingId(ingredient.id)}
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <Edit3 className="w-3 h-3" />
+                    </Button>
+                  </div>
+                )}
               </div>
               
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={() => onRemoveIngredient(ingredient.id)}
-                className="text-red-600 hover:text-red-700 ml-2"
+                className="text-red-600 hover:text-red-700"
               >
                 <X className="w-4 h-4" />
               </Button>
