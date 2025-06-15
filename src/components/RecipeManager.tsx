@@ -200,7 +200,11 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
               Your Recipes ({recipes.length})
             </div>
             <div className="flex items-center gap-2">
-              <RecipeDialog onAddRecipe={onAddRecipe} />
+              <Button onClick={() => setShowAddForm(true)} variant="outline">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Recipe
+              </Button>
+              <RecipeScrapingDialog onAddRecipe={onAddRecipe} />
               <FreeRecipeScrapingDialog onRecipeScraped={onAddRecipe} />
             </div>
           </CardTitle>
