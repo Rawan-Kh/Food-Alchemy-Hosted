@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -42,7 +42,25 @@ export const IngredientEditor: React.FC<IngredientEditorProps> = ({
   onConfirmAll,
   onClearAll
 }) => {
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingIds, setEditingIds] = useState<Set<string>>(new Set());
+
+  // Set all new ingredients to edit mode when they're added
+  useEffect(() => {
+    const newEditingIds = new Set(ingredients.map(ingredient => ingredient.id));
+    setEditingIds(newEditingIds);
+  }, [ingredients]);
+
+  const toggleEditing = (id: string) => {
+    setEditingIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
 
   if (ingredients.length === 0) {
     return null;
@@ -93,7 +111,7 @@ export const IngredientEditor: React.FC<IngredientEditorProps> = ({
                   )}
                 </div>
                 
-                {editingId === ingredient.id ? (
+                {editingIds.has(ingredient.id) ? (
                   <div className="flex items-center gap-2 flex-wrap">
                     <Input
                       type="number"
@@ -144,7 +162,7 @@ export const IngredientEditor: React.FC<IngredientEditorProps> = ({
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => setEditingId(null)}
+                      onClick={() => toggleEditing(ingredient.id)}
                       className="text-green-600 hover:text-green-700"
                     >
                       <Check className="w-4 h-4" />
@@ -158,7 +176,7 @@ export const IngredientEditor: React.FC<IngredientEditorProps> = ({
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => setEditingId(ingredient.id)}
+                      onClick={() => toggleEditing(ingredient.id)}
                       className="text-blue-600 hover:text-blue-700"
                     >
                       <Edit3 className="w-3 h-3" />
