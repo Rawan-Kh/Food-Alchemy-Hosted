@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { VoiceInput } from '@/components/VoiceInput';
 import { IngredientManager, Ingredient } from '@/components/IngredientManager';
@@ -130,6 +129,20 @@ const Index = () => {
       dateAdded: new Date().toISOString()
     };
     setRecipes(prev => [...prev, recipe]);
+  };
+
+  const handleUpdateRecipe = (id: string, updatedRecipe: Omit<Recipe, 'id' | 'dateAdded'>) => {
+    setRecipes(prev => 
+      prev.map(recipe => 
+        recipe.id === id 
+          ? { ...recipe, ...updatedRecipe }
+          : recipe
+      )
+    );
+  };
+
+  const handleDeleteRecipe = (id: string) => {
+    setRecipes(prev => prev.filter(recipe => recipe.id !== id));
   };
 
   const handleUseRecipe = (recipe: Recipe) => {
@@ -281,6 +294,8 @@ const Index = () => {
               recipes={recipes}
               ingredients={ingredients}
               onAddRecipe={handleAddRecipe}
+              onUpdateRecipe={handleUpdateRecipe}
+              onDeleteRecipe={handleDeleteRecipe}
               onUseRecipe={handleUseRecipe}
               matchFilter={matchFilter}
               onMatchFilterChange={setMatchFilter}

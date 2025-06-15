@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { Plus, Search, ChefHat, Clock, Users } from 'lucide-react';
+import { Plus, Search, ChefHat, Clock, Users, Edit, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Ingredient } from './IngredientManager';
 import { RecipeScrapingDialog } from './RecipeScrapingDialog';
@@ -27,6 +26,8 @@ interface RecipeManagerProps {
   recipes: Recipe[];
   ingredients: Ingredient[];
   onAddRecipe: (recipe: Omit<Recipe, 'id' | 'dateAdded'>) => void;
+  onUpdateRecipe: (id: string, recipe: Omit<Recipe, 'id' | 'dateAdded'>) => void;
+  onDeleteRecipe: (id: string) => void;
   onUseRecipe: (recipe: Recipe) => void;
   matchFilter: number;
   onMatchFilterChange: (filter: number) => void;
@@ -36,11 +37,14 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
   recipes,
   ingredients,
   onAddRecipe,
+  onUpdateRecipe,
+  onDeleteRecipe,
   onUseRecipe,
   matchFilter,
   onMatchFilterChange
 }) => {
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [newRecipe, setNewRecipe] = useState({
     name: '',
@@ -52,6 +56,18 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
     source: 'Manual Entry'
   });
   const { toast } = useToast();
+
+  const resetForm = () => {
+    setNewRecipe({
+      name: '',
+      description: '',
+      ingredients: [{ name: '', quantity: 1, unit: 'pcs' }],
+      instructions: [''],
+      cookingTime: 30,
+      servings: 4,
+      source: 'Manual Entry'
+    });
+  };
 
   const calculateMatchPercentage = (recipe: Recipe): number => {
     const availableIngredientNames = ingredients.map(i => i.name.toLowerCase());
@@ -91,20 +107,60 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
     }
 
     onAddRecipe(newRecipe);
-    setNewRecipe({
-      name: '',
-      description: '',
-      ingredients: [{ name: '', quantity: 1, unit: 'pcs' }],
-      instructions: [''],
-      cookingTime: 30,
-      servings: 4,
-      source: 'Manual Entry'
-    });
+    resetForm();
     setShowAddForm(false);
     toast({
       title: "Recipe added!",
       description: `${newRecipe.name} has been added to your recipes`,
     });
+  };
+
+  const handleEditRecipe = (recipe: Recipe) => {
+    setEditingRecipe(recipe);
+    setNewRecipe({
+      name: recipe.name,
+      description: recipe.description,
+      ingredients: [...recipe.ingredients],
+      instructions: [...recipe.instructions],
+      cookingTime: recipe.cookingTime,
+      servings: recipe.servings,
+      source: recipe.source
+    });
+    setShowAddForm(false);
+  };
+
+  const handleUpdateRecipe = () => {
+    if (!editingRecipe || !newRecipe.name.trim()) {
+      toast({
+        title: "Missing recipe name",
+        description: "Please enter a recipe name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    onUpdateRecipe(editingRecipe.id, newRecipe);
+    resetForm();
+    setEditingRecipe(null);
+    toast({
+      title: "Recipe updated!",
+      description: `${newRecipe.name} has been updated`,
+    });
+  };
+
+  const handleDeleteRecipe = (recipe: Recipe) => {
+    if (window.confirm(`Are you sure you want to delete "${recipe.name}"?`)) {
+      onDeleteRecipe(recipe.id);
+      toast({
+        title: "Recipe deleted",
+        description: `${recipe.name} has been removed from your recipes`,
+      });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingRecipe(null);
+    resetForm();
   };
 
   const addIngredientField = () => {
@@ -181,10 +237,10 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
               </div>
             </div>
 
-            {showAddForm && (
+            {(showAddForm || editingRecipe) && (
               <Card className="border-2 border-dashed border-gray-300">
                 <CardHeader>
-                  <CardTitle>Add New Recipe</CardTitle>
+                  <CardTitle>{editingRecipe ? 'Edit Recipe' : 'Add New Recipe'}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -296,8 +352,12 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
                   </div>
 
                   <div className="flex gap-2">
-                    <Button onClick={handleAddRecipe}>Save Recipe</Button>
-                    <Button variant="outline" onClick={() => setShowAddForm(false)}>Cancel</Button>
+                    <Button onClick={editingRecipe ? handleUpdateRecipe : handleAddRecipe}>
+                      {editingRecipe ? 'Update Recipe' : 'Save Recipe'}
+                    </Button>
+                    <Button variant="outline" onClick={editingRecipe ? handleCancelEdit : () => setShowAddForm(false)}>
+                      Cancel
+                    </Button>
                   </div>
                 </CardContent>
               </Card>
@@ -314,14 +374,34 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <CardTitle className="text-lg">{recipe.name}</CardTitle>
-                  <Badge 
-                    variant={matchPercentage === 100 ? 'default' : matchPercentage >= 75 ? 'secondary' : 'outline'}
-                    className={matchPercentage === 100 ? 'bg-green-500' : matchPercentage >= 75 ? 'bg-orange-500' : ''}
-                  >
-                    {matchPercentage}% match
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge 
+                      variant={matchPercentage === 100 ? 'default' : matchPercentage >= 75 ? 'secondary' : 'outline'}
+                      className={matchPercentage === 100 ? 'bg-green-500' : matchPercentage >= 75 ? 'bg-orange-500' : ''}
+                    >
+                      {matchPercentage}% match
+                    </Badge>
+                  </div>
                 </div>
                 <p className="text-sm text-gray-600">{recipe.description}</p>
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEditRecipe(recipe)}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteRecipe(recipe)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="flex-1 space-y-4">
                 <div className="flex items-center gap-4 text-sm text-gray-600">
