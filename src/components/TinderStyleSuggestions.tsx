@@ -240,7 +240,7 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
               )}
               onClick={() => !isProcessing && handleToggleSelection(suggestion)}
             >
-              <CardContent className="p-4 h-full flex flex-col justify-between">
+              <CardContent className="p-6 h-full flex flex-col justify-between">
                 <div className="text-center">
                   <div className="mb-3">
                     <div className="flex justify-center items-center gap-2 mb-2">
@@ -254,31 +254,31 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
                     </h3>
                   </div>
                   
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <Badge 
-                      className={cn("px-2 py-1 text-xs font-medium", getCategoryColor(suggestion.category))}
+                      className={cn("px-3 py-1 text-xs font-medium", getCategoryColor(suggestion.category))}
                     >
                       {suggestion.category}
                     </Badge>
                     
-                    <div className="bg-orange-50 rounded-lg p-2 border border-orange-200">
+                    <div className="bg-orange-50 rounded-lg p-3 border border-orange-200">
                       <div className="text-base font-semibold text-orange-800">
                         {suggestion.defaultQuantity} {suggestion.defaultUnit}
                       </div>
                       <div className="text-xs text-orange-600">Suggested amount</div>
                     </div>
                     
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 px-2">
                       Units: {suggestion.commonUnits.slice(0, 3).join(', ')}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex justify-center gap-2 mt-3">
+                <div className="flex justify-center gap-2 mt-4">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 text-xs"
+                    className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 text-xs px-3 py-2"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -291,7 +291,7 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
                   </Button>
                   <Button
                     size="sm"
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs"
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-2"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
