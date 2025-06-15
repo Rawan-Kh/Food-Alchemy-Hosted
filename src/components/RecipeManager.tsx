@@ -9,6 +9,7 @@ import { Plus, Search, ChefHat, Clock, Users, Edit, Trash2 } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast';
 import { Ingredient } from './IngredientManager';
 import { RecipeScrapingDialog } from './RecipeScrapingDialog';
+import { FreeRecipeScrapingDialog } from './FreeRecipeScrapingDialog';
 
 export interface Recipe {
   id: string;
@@ -194,16 +195,13 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <ChefHat className="w-5 h-5" />
-              Recipe Collection
-            </span>
-            <div className="flex gap-2">
-              <RecipeScrapingDialog onRecipeScraped={onAddRecipe} />
-              <Button onClick={() => setShowAddForm(!showAddForm)}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Recipe
-              </Button>
+              Your Recipes ({recipes.length})
+            </div>
+            <div className="flex items-center gap-2">
+              <RecipeDialog onAddRecipe={onAddRecipe} />
+              <FreeRecipeScrapingDialog onRecipeScraped={onAddRecipe} />
             </div>
           </CardTitle>
         </CardHeader>
