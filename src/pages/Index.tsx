@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { SmartIngredientInput } from '@/components/SmartIngredientInput';
 import { CategorizedIngredientManager, Ingredient } from '@/components/CategorizedIngredientManager';
@@ -219,6 +218,7 @@ const Index = () => {
           onAddIngredients={handleAddIngredients}
           isListening={isListening}
           setIsListening={setIsListening}
+          currentIngredients={ingredients}
         />
 
         <Tabs defaultValue="ingredients" className="space-y-6 mt-8">

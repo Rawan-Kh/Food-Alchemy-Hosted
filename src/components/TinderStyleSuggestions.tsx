@@ -18,6 +18,7 @@ interface TinderStyleSuggestionsProps {
   input: string;
   onAcceptSuggestion: (suggestion: IngredientSuggestion) => void;
   onRejectSuggestion: (suggestion: IngredientSuggestion) => void;
+  currentIngredients?: Array<{ name: string; [key: string]: any }>;
   className?: string;
 }
 
@@ -72,6 +73,7 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
   input,
   onAcceptSuggestion,
   onRejectSuggestion,
+  currentIngredients = [],
   className
 }) => {
   const [currentSuggestions, setCurrentSuggestions] = useState<IngredientSuggestion[]>([]);
@@ -87,18 +89,33 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
     if (!input.trim()) {
       setCurrentSuggestions([]);
       setCurrentIndex(0);
+      // Reset rejected suggestions when input is cleared
+      setRejectedSuggestions(new Set());
       return;
     }
 
     const searchTerm = input.toLowerCase().trim();
-    const filtered = commonIngredients.filter(ingredient => 
-      ingredient.name.toLowerCase().includes(searchTerm) &&
-      !rejectedSuggestions.has(ingredient.name)
-    ).slice(0, 5); // Limit to 5 suggestions for the stack
+    
+    // Get current ingredient names for filtering
+    const currentIngredientNames = currentIngredients.map(ing => ing.name.toLowerCase());
+    
+    const filtered = commonIngredients.filter(ingredient => {
+      const ingredientName = ingredient.name.toLowerCase();
+      // Check if ingredient matches search term
+      const matchesSearch = ingredientName.includes(searchTerm);
+      // Check if ingredient is not already in pantry
+      const notInPantry = !currentIngredientNames.some(pantryName => 
+        pantryName.includes(ingredientName) || ingredientName.includes(pantryName)
+      );
+      // Check if ingredient hasn't been rejected in this session
+      const notRejected = !rejectedSuggestions.has(ingredient.name);
+      
+      return matchesSearch && notInPantry && notRejected;
+    }).slice(0, 5); // Limit to 5 suggestions for the stack
 
     setCurrentSuggestions(filtered);
     setCurrentIndex(0);
-  }, [input, rejectedSuggestions]);
+  }, [input, rejectedSuggestions, currentIngredients]);
 
   const handleAccept = (suggestion: IngredientSuggestion) => {
     setSwipeDirection('right');
@@ -213,7 +230,7 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
         Swipe or tap to choose • {remainingCount} suggestion{remainingCount !== 1 ? 's' : ''} remaining
       </div>
       
-      <div className="relative h-80 flex items-center justify-center">
+      <div className="relative h-80 flex items-center justify-center overflow-hidden">
         {/* Stack of cards in background */}
         {currentSuggestions.slice(currentIndex + 1, currentIndex + 3).map((suggestion, index) => (
           <Card
