@@ -1,5 +1,7 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -383,7 +385,6 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
                     </Badge>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600">{recipe.description}</p>
                 <div className="flex gap-2 mt-2">
                   <Button
                     variant="ghost"
@@ -415,23 +416,38 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
                   </div>
                 </div>
 
-                <div>
-                  <h4 className="font-semibold mb-2">Ingredients:</h4>
-                  <ul className="text-sm space-y-1">
-                    {recipe.ingredients.map((ingredient, index) => {
-                      const hasIngredient = ingredients.some(i => 
-                        i.name.toLowerCase().includes(ingredient.name.toLowerCase()) ||
-                        ingredient.name.toLowerCase().includes(i.name.toLowerCase())
-                      );
-                      return (
-                        <li key={index} className={`flex items-center gap-2 ${hasIngredient ? 'text-green-600' : 'text-red-500'}`}>
-                          <span className={`w-2 h-2 rounded-full ${hasIngredient ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                          {ingredient.quantity} {ingredient.unit} {ingredient.name}
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="description">
+                    <AccordionTrigger className="text-sm font-medium">
+                      Description
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <p className="text-sm text-gray-600">{recipe.description}</p>
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="ingredients">
+                    <AccordionTrigger className="text-sm font-medium">
+                      Ingredients ({recipe.ingredients.length})
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <ul className="text-sm space-y-1">
+                        {recipe.ingredients.map((ingredient, index) => {
+                          const hasIngredient = ingredients.some(i => 
+                            i.name.toLowerCase().includes(ingredient.name.toLowerCase()) ||
+                            ingredient.name.toLowerCase().includes(i.name.toLowerCase())
+                          );
+                          return (
+                            <li key={index} className={`flex items-center gap-2 ${hasIngredient ? 'text-green-600' : 'text-red-500'}`}>
+                              <span className={`w-2 h-2 rounded-full ${hasIngredient ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                              {ingredient.quantity} {ingredient.unit} {ingredient.name}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
 
                 <div className="flex-1">
                   <p className="text-xs text-gray-500">Source: {recipe.source}</p>
