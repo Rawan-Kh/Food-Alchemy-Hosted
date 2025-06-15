@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { SmartIngredientInput } from '@/components/SmartIngredientInput';
 import { CategorizedIngredientManager, Ingredient } from '@/components/CategorizedIngredientManager';
@@ -16,7 +15,6 @@ const generateUniqueId = () => {
 const Index = () => {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [isListening, setIsListening] = useState(false);
   const [matchFilter, setMatchFilter] = useState(50);
   const { toast } = useToast();
 
@@ -211,14 +209,12 @@ const Index = () => {
             <h1 className="text-4xl font-bold text-gray-800">Smart Recipe Assistant</h1>
           </div>
           <p className="text-gray-600 text-lg">
-            Manage your ingredients and discover recipes with smart suggestions and voice commands
+            Manage your ingredients and discover recipes with smart suggestions
           </p>
         </header>
 
         <SmartIngredientInput
           onAddIngredients={handleAddIngredients}
-          isListening={isListening}
-          setIsListening={setIsListening}
           currentIngredients={ingredients}
         />
 

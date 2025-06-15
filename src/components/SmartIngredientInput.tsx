@@ -1,10 +1,10 @@
+
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TinderStyleSuggestions } from './TinderStyleSuggestions';
 import { IngredientEditor, PendingIngredient } from './IngredientEditor';
-import { VoiceInput } from './VoiceInput';
 import { Plus, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -32,8 +32,6 @@ interface SmartIngredientInputProps {
     expiryDate: string;
     category: string;
   }>) => void;
-  isListening: boolean;
-  setIsListening: (listening: boolean) => void;
   currentIngredients: Ingredient[];
 }
 
@@ -43,8 +41,6 @@ const generateUniqueId = () => {
 
 export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
   onAddIngredients,
-  isListening,
-  setIsListening,
   currentIngredients
 }) => {
   const [textInput, setTextInput] = useState('');
@@ -147,21 +143,6 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
     });
   };
 
-  const handleVoiceIngredientsDetected = (detectedIngredients: ParsedIngredient[]) => {
-    detectedIngredients.forEach(ingredient => {
-      addPendingIngredient(
-        ingredient.name,
-        ingredient.quantity || 1,
-        ingredient.unit || 'pcs',
-        'other' // Default category for voice-detected ingredients
-      );
-    });
-    toast({
-      title: "Voice ingredients detected",
-      description: `Added ${detectedIngredients.length} ingredient(s) for review`,
-    });
-  };
-
   const handleUpdatePendingIngredient = (id: string, updates: Partial<PendingIngredient>) => {
     setPendingIngredients(prev =>
       prev.map(ingredient =>
@@ -220,21 +201,14 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
                   onKeyPress={(e) => e.key === 'Enter' && handleTextInputSubmit()}
                 />
               </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={handleTextInputSubmit} 
-                  disabled={!textInput.trim()}
-                  className="bg-orange-600 hover:bg-orange-700"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add to Queue
-                </Button>
-                <VoiceInput
-                  onIngredientsDetected={handleVoiceIngredientsDetected}
-                  isListening={isListening}
-                  setIsListening={setIsListening}
-                />
-              </div>
+              <Button 
+                onClick={handleTextInputSubmit} 
+                disabled={!textInput.trim()}
+                className="bg-orange-600 hover:bg-orange-700"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Add to Queue
+              </Button>
             </div>
 
             <TinderStyleSuggestions
