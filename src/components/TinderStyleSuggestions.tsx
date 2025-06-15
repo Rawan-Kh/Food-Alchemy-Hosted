@@ -106,12 +106,15 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
     
     const filtered = commonIngredients.filter(ingredient => 
       ingredient.name.toLowerCase().includes(searchTerm) &&
-      !rejectedSuggestions.has(ingredient.name) &&
       !pantryIngredientNames.has(ingredient.name.toLowerCase())
     ).slice(0, 6); // Show up to 6 suggestions
 
     setCurrentSuggestions(filtered);
-  }, [input, rejectedSuggestions, currentIngredients]);
+    
+    // Reset rejected and accepted suggestions when input changes
+    setRejectedSuggestions(new Set());
+    setAcceptedSuggestions(new Set());
+  }, [input, currentIngredients]);
 
   const handleAccept = (suggestion: IngredientSuggestion) => {
     console.log('Accept button clicked for:', suggestion.name);
@@ -135,7 +138,8 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
     }, 300);
   };
 
-  if (currentSuggestions.length === 0) {
+  // Hide suggestions when there's no input
+  if (!input.trim() || currentSuggestions.length === 0) {
     return null;
   }
 
