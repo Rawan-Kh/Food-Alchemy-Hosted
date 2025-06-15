@@ -29,6 +29,12 @@ const commonUnits = [
   'cloves', 'slices', 'bunches', 'cans', 'bottles', 'packs'
 ];
 
+const commonCategories = [
+  'Vegetables', 'Fruits', 'Meat & Poultry', 'Seafood', 'Dairy', 
+  'Grains & Cereals', 'Herbs & Spices', 'Condiments & Sauces', 
+  'Beverages', 'Snacks', 'Frozen', 'Canned Goods', 'Baking', 'Other'
+];
+
 export const IngredientEditor: React.FC<IngredientEditorProps> = ({
   ingredients,
   onUpdateIngredient,
@@ -78,8 +84,8 @@ export const IngredientEditor: React.FC<IngredientEditorProps> = ({
               className="flex items-center justify-between p-3 border rounded-lg bg-gray-50"
             >
               <div className="flex items-center gap-3 flex-1">
-                <div className="flex flex-col gap-1">
-                  <span className="font-medium">{ingredient.name}</span>
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                  <span className="font-medium truncate">{ingredient.name}</span>
                   {ingredient.category && (
                     <Badge variant="outline" className="text-xs w-fit">
                       {ingredient.category}
@@ -88,7 +94,7 @@ export const IngredientEditor: React.FC<IngredientEditorProps> = ({
                 </div>
                 
                 {editingId === ingredient.id ? (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Input
                       type="number"
                       value={ingredient.quantity}
@@ -114,6 +120,23 @@ export const IngredientEditor: React.FC<IngredientEditorProps> = ({
                         {commonUnits.map((unit) => (
                           <SelectItem key={unit} value={unit}>
                             {unit}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Select
+                      value={ingredient.category || ''}
+                      onValueChange={(value) =>
+                        onUpdateIngredient(ingredient.id, { category: value })
+                      }
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue placeholder="Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {commonCategories.map((category) => (
+                          <SelectItem key={category} value={category}>
+                            {category}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -148,7 +171,7 @@ export const IngredientEditor: React.FC<IngredientEditorProps> = ({
                 size="sm"
                 variant="ghost"
                 onClick={() => onRemoveIngredient(ingredient.id)}
-                className="text-red-600 hover:text-red-700"
+                className="text-red-600 hover:text-red-700 ml-2"
               >
                 <X className="w-4 h-4" />
               </Button>

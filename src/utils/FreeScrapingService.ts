@@ -32,6 +32,8 @@ export class FreeScrapingService {
             const recipe = this.parseRecipeFromHTML(html, url);
             if (recipe) {
               console.log('Successfully scraped recipe:', recipe.name);
+              // Clean and deduplicate ingredients
+              recipe.ingredients = this.cleanAndDeduplicateIngredients(recipe.ingredients);
               return { success: true, recipe };
             }
           }
@@ -134,6 +136,65 @@ export class FreeScrapingService {
       console.error('Error parsing recipe HTML:', error);
       return null;
     }
+  }
+
+  private static cleanAndDeduplicateIngredients(ingredients: { name: string; quantity: number; unit: string }[]): { name: string; quantity: number; unit: string }[] {
+    const cleaned: { name: string; quantity: number; unit: string }[] = [];
+    const seen = new Set<string>();
+
+    for (const ingredient of ingredients) {
+      // Clean the ingredient name
+      let cleanName = ingredient.name
+        .replace(/^(to|and)\s+/i, '') // Remove "To" or "And" at the beginning
+        .replace(/^\d+\s*(pcs|pieces?)\s*/i, '') // Remove quantity prefix like "1 pcs"
+        .replace(/^[\d\s/.]+/, '') // Remove any remaining numbers at the start
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .trim();
+
+      // Skip if name is too short or empty after cleaning
+      if (cleanName.length < 2) continue;
+
+      // Create a normalized key for deduplication (lowercase, no special chars)
+      const normalizedKey = cleanName.toLowerCase()
+        .replace(/[^\w\s]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      // Skip duplicates
+      if (seen.has(normalizedKey)) continue;
+      seen.add(normalizedKey);
+
+      // Clean quantity and unit
+      let cleanQuantity = ingredient.quantity;
+      let cleanUnit = ingredient.unit;
+
+      // If quantity is 1 and unit is 'pcs', try to extract better info from name
+      if (cleanQuantity === 1 && cleanUnit === 'pcs') {
+        const quantityMatch = ingredient.name.match(/^(\d+(?:\.\d+)?(?:\/\d+)?)\s*(\w+)?/);
+        if (quantityMatch) {
+          cleanQuantity = this.parseQuantity(quantityMatch[1]);
+          if (quantityMatch[2] && this.isValidUnit(quantityMatch[2])) {
+            cleanUnit = quantityMatch[2].toLowerCase();
+          }
+        }
+      }
+
+      // Capitalize first letter of ingredient name
+      cleanName = cleanName.charAt(0).toUpperCase() + cleanName.slice(1).toLowerCase();
+
+      cleaned.push({
+        name: cleanName,
+        quantity: cleanQuantity,
+        unit: cleanUnit
+      });
+    }
+
+    return cleaned.slice(0, 20); // Limit to 20 ingredients
+  }
+
+  private static isValidUnit(unit: string): boolean {
+    const validUnits = ['cup', 'cups', 'tbsp', 'tsp', 'lb', 'lbs', 'oz', 'g', 'kg', 'ml', 'l', 'cloves', 'clove'];
+    return validUnits.includes(unit.toLowerCase());
   }
 
   private static extractRecipeFromJsonLd(doc: Document): Recipe | null {

@@ -6,9 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Globe, Key, TestTube } from 'lucide-react';
+import { Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { WebScrapingService } from '@/utils/WebScrapingService';
+import { FreeScrapingService } from '@/utils/FreeScrapingService';
 import { Recipe } from './RecipeManager';
 
 interface RecipeScrapingDialogProps {
@@ -18,48 +18,9 @@ interface RecipeScrapingDialogProps {
 export const RecipeScrapingDialog: React.FC<RecipeScrapingDialogProps> = ({ onRecipeScraped }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [url, setUrl] = useState('');
-  const [apiKey, setApiKey] = useState(WebScrapingService.getApiKey() || '');
   const [isLoading, setIsLoading] = useState(false);
-  const [isTestingKey, setIsTestingKey] = useState(false);
   const [scrapedRecipe, setScrapedRecipe] = useState<any>(null);
   const { toast } = useToast();
-
-  const handleTestApiKey = async () => {
-    if (!apiKey.trim()) {
-      toast({
-        title: "Missing API key",
-        description: "Please enter your Firecrawl API key",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsTestingKey(true);
-    try {
-      const isValid = await WebScrapingService.testApiKey(apiKey);
-      if (isValid) {
-        WebScrapingService.saveApiKey(apiKey);
-        toast({
-          title: "API key is valid!",
-          description: "Your Firecrawl API key has been saved",
-        });
-      } else {
-        toast({
-          title: "Invalid API key",
-          description: "Please check your Firecrawl API key and try again",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error testing API key",
-        description: "Failed to validate API key",
-        variant: "destructive",
-      });
-    } finally {
-      setIsTestingKey(false);
-    }
-  };
 
   const handleScrapeRecipe = async () => {
     if (!url.trim()) {
@@ -71,18 +32,9 @@ export const RecipeScrapingDialog: React.FC<RecipeScrapingDialogProps> = ({ onRe
       return;
     }
 
-    if (!WebScrapingService.getApiKey()) {
-      toast({
-        title: "Missing API key",
-        description: "Please set up your Firecrawl API key first",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsLoading(true);
     try {
-      const result = await WebScrapingService.scrapeRecipe(url);
+      const result = await FreeScrapingService.scrapeRecipe(url);
       
       if (result.success && result.recipe) {
         setScrapedRecipe(result.recipe);
@@ -126,7 +78,7 @@ export const RecipeScrapingDialog: React.FC<RecipeScrapingDialogProps> = ({ onRe
       <DialogTrigger asChild>
         <Button variant="outline">
           <Globe className="w-4 h-4 mr-2" />
-          Scrape from Web
+          Scrape Recipe
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -138,47 +90,6 @@ export const RecipeScrapingDialog: React.FC<RecipeScrapingDialogProps> = ({ onRe
         </DialogHeader>
         
         <div className="space-y-6">
-          {/* API Key Setup */}
-          <Card>
-            <CardContent className="pt-6">
-              <div className="space-y-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <Key className="w-4 h-4" />
-                  <Label htmlFor="apiKey">Firecrawl API Key</Label>
-                </div>
-                <div className="flex gap-2">
-                  <Input
-                    id="apiKey"
-                    type="password"
-                    placeholder="Enter your Firecrawl API key"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button 
-                    onClick={handleTestApiKey} 
-                    disabled={isTestingKey || !apiKey.trim()}
-                    variant="outline"
-                  >
-                    <TestTube className="w-4 h-4 mr-2" />
-                    {isTestingKey ? 'Testing...' : 'Test'}
-                  </Button>
-                </div>
-                <p className="text-sm text-gray-600">
-                  Get your free API key from{' '}
-                  <a 
-                    href="https://firecrawl.dev" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
-                  >
-                    firecrawl.dev
-                  </a>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* URL Input */}
           <div className="space-y-4">
             <div>
@@ -189,6 +100,9 @@ export const RecipeScrapingDialog: React.FC<RecipeScrapingDialogProps> = ({ onRe
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
               />
+              <p className="text-sm text-gray-600 mt-1">
+                Enter the URL of any recipe website to automatically extract the recipe details.
+              </p>
             </div>
             <Button 
               onClick={handleScrapeRecipe} 
