@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -87,16 +87,12 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
   className
 }) => {
   const [currentSuggestions, setCurrentSuggestions] = useState<IngredientSuggestion[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
   const [rejectedSuggestions, setRejectedSuggestions] = useState<Set<string>>(new Set());
-  const cardRef = useRef<HTMLDivElement>(null);
+  const [processingCard, setProcessingCard] = useState<string | null>(null);
 
   useEffect(() => {
     if (!input.trim()) {
       setCurrentSuggestions([]);
-      setCurrentIndex(0);
       return;
     }
 
@@ -111,153 +107,119 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
       ingredient.name.toLowerCase().includes(searchTerm) &&
       !rejectedSuggestions.has(ingredient.name) &&
       !pantryIngredientNames.has(ingredient.name.toLowerCase())
-    ).slice(0, 5); // Limit to 5 suggestions for the stack
+    ).slice(0, 6); // Show up to 6 suggestions
 
     setCurrentSuggestions(filtered);
-    setCurrentIndex(0);
   }, [input, rejectedSuggestions, currentIngredients]);
 
   const handleAccept = (suggestion: IngredientSuggestion) => {
     console.log('Accept button clicked for:', suggestion.name);
-    setSwipeDirection('right');
-    setIsAnimating(true);
+    setProcessingCard(suggestion.name);
     
     setTimeout(() => {
       onAcceptSuggestion(suggestion);
-      moveToNext();
+      setCurrentSuggestions(prev => prev.filter(s => s.name !== suggestion.name));
+      setProcessingCard(null);
     }, 300);
   };
 
   const handleReject = (suggestion: IngredientSuggestion) => {
     console.log('Reject button clicked for:', suggestion.name);
-    setSwipeDirection('left');
-    setIsAnimating(true);
+    setProcessingCard(suggestion.name);
     
     setTimeout(() => {
       setRejectedSuggestions(prev => new Set([...prev, suggestion.name]));
       onRejectSuggestion(suggestion);
-      moveToNext();
+      setCurrentSuggestions(prev => prev.filter(s => s.name !== suggestion.name));
+      setProcessingCard(null);
     }, 300);
   };
 
-  const moveToNext = () => {
-    setTimeout(() => {
-      setCurrentIndex(prev => prev + 1);
-      setSwipeDirection(null);
-      setIsAnimating(false);
-    }, 100);
-  };
-
-  if (currentSuggestions.length === 0 || currentIndex >= currentSuggestions.length) {
+  if (currentSuggestions.length === 0) {
     return null;
   }
-
-  const currentSuggestion = currentSuggestions[currentIndex];
-  const remainingCount = currentSuggestions.length - currentIndex;
 
   return (
     <div className={cn("mt-4", className)}>
       <div className="text-sm text-gray-600 mb-3 text-center font-medium">
-        {remainingCount} suggestion{remainingCount !== 1 ? 's' : ''} remaining
+        {currentSuggestions.length} suggestion{currentSuggestions.length !== 1 ? 's' : ''} found
       </div>
       
-      <div className="relative h-80 flex items-center justify-center">
-        {/* Stack of cards in background */}
-        {currentSuggestions.slice(currentIndex + 1, currentIndex + 3).map((suggestion, index) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {currentSuggestions.map((suggestion) => (
           <Card
-            key={`${suggestion.name}-${currentIndex + index + 1}`}
+            key={suggestion.name}
             className={cn(
-              "absolute w-72 h-64 shadow-lg transition-all duration-200",
-              index === 0 ? "scale-95 -rotate-1 z-10" : "scale-90 rotate-1 z-0"
+              "relative shadow-lg transition-all duration-300 bg-white border-2 h-64",
+              processingCard === suggestion.name && "animate-pulse opacity-50"
             )}
-            style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.8)',
-            }}
-          />
-        ))}
-        
-        {/* Main card */}
-        <Card
-          ref={cardRef}
-          className={cn(
-            "relative w-72 h-64 shadow-xl transition-all duration-300 z-20 bg-white border-2",
-            isAnimating && swipeDirection === 'right' && "animate-pulse border-green-400",
-            isAnimating && swipeDirection === 'left' && "animate-pulse border-red-400"
-          )}
-          style={{
-            transform: isAnimating 
-              ? swipeDirection === 'right' 
-                ? 'translateX(400px) rotate(20deg)' 
-                : 'translateX(-400px) rotate(-20deg)'
-              : 'translateX(0px) rotate(0deg)',
-            opacity: isAnimating ? 0 : 1,
-          }}
-        >
-          <CardContent className="p-6 h-full flex flex-col justify-between">
-            <div className="text-center">
-              <div className="mb-4">
-                <Star className="w-8 h-8 mx-auto text-yellow-500 mb-2" />
-                <h3 className="text-2xl font-bold text-gray-800 capitalize">
-                  {currentSuggestion.name}
-                </h3>
-              </div>
-              
-              <div className="space-y-3">
-                <Badge 
-                  className={cn("px-3 py-1 text-sm font-medium", getCategoryColor(currentSuggestion.category))}
-                >
-                  {currentSuggestion.category}
-                </Badge>
+          >
+            <CardContent className="p-4 h-full flex flex-col justify-between">
+              <div className="text-center">
+                <div className="mb-3">
+                  <Star className="w-6 h-6 mx-auto text-yellow-500 mb-2" />
+                  <h3 className="text-lg font-bold text-gray-800 capitalize">
+                    {suggestion.name}
+                  </h3>
+                </div>
                 
-                <div className="bg-orange-50 rounded-lg p-3 border border-orange-200">
-                  <div className="text-lg font-semibold text-orange-800">
-                    {currentSuggestion.defaultQuantity} {currentSuggestion.defaultUnit}
+                <div className="space-y-2">
+                  <Badge 
+                    className={cn("px-2 py-1 text-xs font-medium", getCategoryColor(suggestion.category))}
+                  >
+                    {suggestion.category}
+                  </Badge>
+                  
+                  <div className="bg-orange-50 rounded-lg p-2 border border-orange-200">
+                    <div className="text-base font-semibold text-orange-800">
+                      {suggestion.defaultQuantity} {suggestion.defaultUnit}
+                    </div>
+                    <div className="text-xs text-orange-600">Suggested amount</div>
                   </div>
-                  <div className="text-sm text-orange-600">Suggested amount</div>
-                </div>
-                
-                <div className="text-xs text-gray-500">
-                  Common units: {currentSuggestion.commonUnits.join(', ')}
+                  
+                  <div className="text-xs text-gray-500">
+                    Units: {suggestion.commonUnits.slice(0, 3).join(', ')}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div className="flex justify-center gap-4 mt-4">
-              <Button
-                variant="outline"
-                size="lg"
-                className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleReject(currentSuggestion);
-                }}
-                disabled={isAnimating}
-              >
-                <X className="w-5 h-5 mr-2" />
-                Pass
-              </Button>
-              <Button
-                size="lg"
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleAccept(currentSuggestion);
-                }}
-                disabled={isAnimating}
-              >
-                <Heart className="w-5 h-5 mr-2" />
-                Add
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="flex justify-center gap-2 mt-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 text-xs"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleReject(suggestion);
+                  }}
+                  disabled={processingCard === suggestion.name}
+                >
+                  <X className="w-3 h-3 mr-1" />
+                  Pass
+                </Button>
+                <Button
+                  size="sm"
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleAccept(suggestion);
+                  }}
+                  disabled={processingCard === suggestion.name}
+                >
+                  <Heart className="w-3 h-3 mr-1" />
+                  Add
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
       
       <div className="text-center mt-4">
         <div className="text-xs text-gray-500">
-          💡 Tip: Click "Add" to add ingredient to your pantry
+          💡 Tip: Click "Add" to add ingredients to your pantry
         </div>
       </div>
     </div>
