@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, X, Heart, Star } from 'lucide-react';
+import { Check, X, Heart, Star, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface IngredientSuggestion {
@@ -99,14 +99,14 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
 
     const searchTerm = input.toLowerCase().trim();
     
-    // Get ingredients already in pantry
+    // Get ingredients already in pantry for state checking
     const pantryIngredientNames = new Set(
       currentIngredients.map(ingredient => ingredient.name.toLowerCase())
     );
     
+    // Show all matching suggestions regardless of pantry status
     const filtered = commonIngredients.filter(ingredient => 
-      ingredient.name.toLowerCase().includes(searchTerm) &&
-      !pantryIngredientNames.has(ingredient.name.toLowerCase())
+      ingredient.name.toLowerCase().includes(searchTerm)
     ).slice(0, 6); // Show up to 6 suggestions
 
     setCurrentSuggestions(filtered);
@@ -138,9 +138,20 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
     }, 300);
   };
 
-  // Hide suggestions when there's no input
-  if (!input.trim() || currentSuggestions.length === 0) {
+  // Only hide when input is empty
+  if (!input.trim()) {
     return null;
+  }
+
+  // If no suggestions match the search, show a message
+  if (currentSuggestions.length === 0) {
+    return (
+      <div className={cn("mt-4", className)}>
+        <div className="text-sm text-gray-500 text-center py-8">
+          No ingredient suggestions found for "{input}"
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -151,6 +162,10 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {currentSuggestions.map((suggestion) => {
+          // Check different states
+          const isInPantry = currentIngredients.some(
+            ingredient => ingredient.name.toLowerCase() === suggestion.name.toLowerCase()
+          );
           const isAccepted = acceptedSuggestions.has(suggestion.name);
           const isRejected = rejectedSuggestions.has(suggestion.name);
           
@@ -161,7 +176,8 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
                 "relative shadow-lg transition-all duration-300 bg-white border-2 h-64",
                 processingCard === suggestion.name && "animate-pulse opacity-50",
                 isAccepted && "border-green-300 bg-green-50",
-                isRejected && "border-red-300 bg-red-50"
+                isRejected && "border-red-300 bg-red-50",
+                isInPantry && "border-blue-300 bg-blue-50"
               )}
             >
               <CardContent className="p-4 h-full flex flex-col justify-between">
@@ -171,6 +187,8 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
                       <Check className="w-6 h-6 mx-auto text-green-600 mb-2" />
                     ) : isRejected ? (
                       <X className="w-6 h-6 mx-auto text-red-600 mb-2" />
+                    ) : isInPantry ? (
+                      <Package className="w-6 h-6 mx-auto text-blue-600 mb-2" />
                     ) : (
                       <Star className="w-6 h-6 mx-auto text-yellow-500 mb-2" />
                     )}
@@ -207,6 +225,10 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
                   ) : isRejected ? (
                     <div className="flex-1 text-center py-2 text-red-600 font-medium text-sm">
                       ✗ Rejected
+                    </div>
+                  ) : isInPantry ? (
+                    <div className="flex-1 text-center py-2 text-blue-600 font-medium text-sm">
+                      📦 Already in pantry
                     </div>
                   ) : (
                     <>
