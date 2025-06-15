@@ -1,14 +1,14 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, ChefHat } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import { Ingredient } from './IngredientManager';
 import { FreeRecipeScrapingDialog } from './FreeRecipeScrapingDialog';
 import { RecipeForm } from './RecipeForm';
 import { RecipeCard } from './RecipeCard';
 import { RecipeFilters } from './RecipeFilters';
+import { useRecipeManager } from '@/hooks/useRecipeManager';
 
 export interface Recipe {
   id: string;
@@ -43,125 +43,24 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
   matchFilter,
   onMatchFilterChange
 }) => {
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    ingredients: [{ name: '', quantity: 1, unit: 'pcs' }],
-    instructions: [''],
-    cookingTime: 30,
-    servings: 4,
-    source: 'Manual Entry'
-  });
-  const { toast } = useToast();
+  const {
+    showAddForm,
+    setShowAddForm,
+    editingRecipe,
+    searchTerm,
+    setSearchTerm,
+    formData,
+    setFormData,
+    calculateMatchPercentage,
+    getFilteredRecipes,
+    handleAddRecipe,
+    handleEditRecipe,
+    handleUpdateRecipe,
+    handleDeleteRecipe,
+    handleCancelEdit
+  } = useRecipeManager(recipes, ingredients, onAddRecipe, onUpdateRecipe, onDeleteRecipe, onUseRecipe);
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      ingredients: [{ name: '', quantity: 1, unit: 'pcs' }],
-      instructions: [''],
-      cookingTime: 30,
-      servings: 4,
-      source: 'Manual Entry'
-    });
-  };
-
-  const calculateMatchPercentage = (recipe: Recipe): number => {
-    const availableIngredientNames = ingredients.map(i => i.name.toLowerCase());
-    const requiredIngredients = recipe.ingredients.length;
-    
-    if (requiredIngredients === 0) return 100;
-    
-    const matchedIngredients = recipe.ingredients.filter(recipeIngredient =>
-      availableIngredientNames.some(availableIngredient =>
-        availableIngredient.includes(recipeIngredient.name.toLowerCase()) ||
-        recipeIngredient.name.toLowerCase().includes(availableIngredient)
-      )
-    ).length;
-
-    return Math.round((matchedIngredients / requiredIngredients) * 100);
-  };
-
-  const getFilteredRecipes = () => {
-    return recipes.filter(recipe => {
-      const matchPercentage = calculateMatchPercentage(recipe);
-      const matchesFilter = matchPercentage >= matchFilter;
-      const matchesSearch = recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      return matchesFilter && matchesSearch;
-    }).sort((a, b) => calculateMatchPercentage(b) - calculateMatchPercentage(a));
-  };
-
-  const handleAddRecipe = () => {
-    if (!formData.name.trim()) {
-      toast({
-        title: "Missing recipe name",
-        description: "Please enter a recipe name",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    onAddRecipe(formData);
-    resetForm();
-    setShowAddForm(false);
-    toast({
-      title: "Recipe added!",
-      description: `${formData.name} has been added to your recipes`,
-    });
-  };
-
-  const handleEditRecipe = (recipe: Recipe) => {
-    setEditingRecipe(recipe);
-    setFormData({
-      name: recipe.name,
-      description: recipe.description,
-      ingredients: [...recipe.ingredients],
-      instructions: [...recipe.instructions],
-      cookingTime: recipe.cookingTime,
-      servings: recipe.servings,
-      source: recipe.source
-    });
-    setShowAddForm(false);
-  };
-
-  const handleUpdateRecipe = () => {
-    if (!editingRecipe || !formData.name.trim()) {
-      toast({
-        title: "Missing recipe name",
-        description: "Please enter a recipe name",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    onUpdateRecipe(editingRecipe.id, formData);
-    resetForm();
-    setEditingRecipe(null);
-    toast({
-      title: "Recipe updated!",
-      description: `${formData.name} has been updated`,
-    });
-  };
-
-  const handleDeleteRecipe = (recipe: Recipe) => {
-    if (window.confirm(`Are you sure you want to delete "${recipe.name}"?`)) {
-      onDeleteRecipe(recipe.id);
-      toast({
-        title: "Recipe deleted",
-        description: `${recipe.name} has been removed from your recipes`,
-      });
-    }
-  };
-
-  const handleCancelEdit = () => {
-    setEditingRecipe(null);
-    resetForm();
-  };
+  const filteredRecipes = getFilteredRecipes(matchFilter);
 
   return (
     <div className="space-y-6">
@@ -204,7 +103,7 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {getFilteredRecipes().map((recipe) => {
+        {filteredRecipes.map((recipe) => {
           const matchPercentage = calculateMatchPercentage(recipe);
           return (
             <RecipeCard
@@ -220,7 +119,7 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
         })}
       </div>
 
-      {getFilteredRecipes().length === 0 && (
+      {filteredRecipes.length === 0 && (
         <Card>
           <CardContent className="text-center py-8">
             <ChefHat className="w-12 h-12 mx-auto text-gray-400 mb-4" />

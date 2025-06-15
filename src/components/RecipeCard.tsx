@@ -7,6 +7,8 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, Users, Edit, Trash2 } from 'lucide-react';
 import { Recipe } from './RecipeManager';
 import { Ingredient } from './IngredientManager';
+import { RecipeIngredientsList } from './RecipeIngredientsList';
+import { RecipeInstructions } from './RecipeInstructions';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -80,27 +82,11 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
             </AccordionContent>
           </AccordionItem>
           
-          <AccordionItem value="ingredients">
-            <AccordionTrigger className="text-sm font-medium">
-              Ingredients ({recipe.ingredients.length})
-            </AccordionTrigger>
-            <AccordionContent>
-              <ul className="text-sm space-y-1">
-                {recipe.ingredients.map((ingredient, index) => {
-                  const hasIngredient = ingredients.some(i => 
-                    i.name.toLowerCase().includes(ingredient.name.toLowerCase()) ||
-                    ingredient.name.toLowerCase().includes(i.name.toLowerCase())
-                  );
-                  return (
-                    <li key={index} className={`flex items-center gap-2 ${hasIngredient ? 'text-green-600' : 'text-red-500'}`}>
-                      <span className={`w-2 h-2 rounded-full ${hasIngredient ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                      {ingredient.quantity} {ingredient.unit} {ingredient.name}
-                    </li>
-                  );
-                })}
-              </ul>
-            </AccordionContent>
-          </AccordionItem>
+          <RecipeIngredientsList 
+            ingredients={recipe.ingredients}
+            availableIngredients={ingredients}
+          />
+          <RecipeInstructions instructions={recipe.instructions} />
         </Accordion>
 
         <div className="flex-1">
