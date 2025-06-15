@@ -1,19 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { VoiceInput } from '@/components/VoiceInput';
+import { SmartIngredientInput } from '@/components/SmartIngredientInput';
 import { IngredientManager, Ingredient } from '@/components/IngredientManager';
 import { RecipeManager, Recipe } from '@/components/RecipeManager';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { ChefHat, Package, Mic, Plus } from 'lucide-react';
+import { ChefHat, Package } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface ParsedIngredient {
-  name: string;
-  quantity?: number;
-  unit?: string;
-}
 
 // Generate unique ID with timestamp and random component
 const generateUniqueId = () => {
@@ -24,7 +16,6 @@ const Index = () => {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isListening, setIsListening] = useState(false);
-  const [textInput, setTextInput] = useState('');
   const [matchFilter, setMatchFilter] = useState(50);
   const { toast } = useToast();
 
@@ -97,6 +88,22 @@ const Index = () => {
   useEffect(() => {
     localStorage.setItem('recipe-app-recipes', JSON.stringify(recipes));
   }, [recipes]);
+
+  const handleAddIngredients = (newIngredients: Array<{
+    name: string;
+    quantity: number;
+    unit: string;
+    expiryDate: string;
+  }>) => {
+    const ingredientsWithIds = newIngredients.map(ingredient => ({
+      ...ingredient,
+      id: generateUniqueId(),
+      dateAdded: new Date().toISOString()
+    }));
+    
+    console.log('Adding multiple ingredients:', ingredientsWithIds);
+    setIngredients(prev => [...prev, ...ingredientsWithIds]);
+  };
 
   const handleAddIngredient = (newIngredient: Omit<Ingredient, 'id' | 'dateAdded'>) => {
     const ingredient: Ingredient = {
@@ -187,43 +194,6 @@ const Index = () => {
     }
   };
 
-  const handleVoiceIngredientsDetected = (detectedIngredients: ParsedIngredient[]) => {
-    console.log('Voice detected ingredients:', detectedIngredients);
-    detectedIngredients.forEach(parsedIngredient => {
-      handleAddIngredient({
-        name: parsedIngredient.name,
-        quantity: parsedIngredient.quantity || 0, // Set to 0 if not provided to allow editing
-        unit: parsedIngredient.unit || 'pcs',
-        expiryDate: ''
-      });
-    });
-  };
-
-  const handleTextInputSubmit = () => {
-    if (!textInput.trim()) return;
-    
-    // Simple parsing - split by commas and common separators
-    const ingredientNames = textInput
-      .split(/[,;]+/)
-      .map(name => name.trim())
-      .filter(name => name.length > 0);
-    
-    ingredientNames.forEach(ingredientName => {
-      handleAddIngredient({
-        name: ingredientName,
-        quantity: 1,
-        unit: 'pcs',
-        expiryDate: ''
-      });
-    });
-    
-    setTextInput('');
-    toast({
-      title: "Ingredients added!",
-      description: `Added: ${ingredientNames.join(', ')}`,
-    });
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-green-50 p-4">
       <div className="max-w-7xl mx-auto">
@@ -233,42 +203,17 @@ const Index = () => {
             <h1 className="text-4xl font-bold text-gray-800">Smart Recipe Assistant</h1>
           </div>
           <p className="text-gray-600 text-lg">
-            Manage your ingredients and discover recipes with voice commands
+            Manage your ingredients and discover recipes with smart suggestions and voice commands
           </p>
         </header>
 
-        <Card className="mb-8 bg-white/80 backdrop-blur-sm">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Plus className="w-5 h-5" />
-              Quick Add Ingredients
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col md:flex-row gap-4 items-end">
-              <div className="flex-1">
-                <Input
-                  placeholder="Type ingredients separated by commas (e.g., tomatoes, onions, garlic)"
-                  value={textInput}
-                  onChange={(e) => setTextInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleTextInputSubmit()}
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button onClick={handleTextInputSubmit} disabled={!textInput.trim()}>
-                  Add Ingredients
-                </Button>
-                <VoiceInput
-                  onIngredientsDetected={handleVoiceIngredientsDetected}
-                  isListening={isListening}
-                  setIsListening={setIsListening}
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <SmartIngredientInput
+          onAddIngredients={handleAddIngredients}
+          isListening={isListening}
+          setIsListening={setIsListening}
+        />
 
-        <Tabs defaultValue="ingredients" className="space-y-6">
+        <Tabs defaultValue="ingredients" className="space-y-6 mt-8">
           <TabsList className="grid w-full grid-cols-2 bg-white/80 backdrop-blur-sm">
             <TabsTrigger value="ingredients" className="flex items-center gap-2">
               <Package className="w-4 h-4" />
