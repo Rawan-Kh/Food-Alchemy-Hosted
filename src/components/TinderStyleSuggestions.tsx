@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,10 +13,21 @@ interface IngredientSuggestion {
   defaultUnit: string;
 }
 
+interface Ingredient {
+  id: string;
+  name: string;
+  quantity: number;
+  unit: string;
+  expiryDate: string;
+  category: string;
+  dateAdded: string;
+}
+
 interface TinderStyleSuggestionsProps {
   input: string;
   onAcceptSuggestion: (suggestion: IngredientSuggestion) => void;
   onRejectSuggestion: (suggestion: IngredientSuggestion) => void;
+  currentIngredients: Ingredient[];
   className?: string;
 }
 
@@ -72,6 +82,7 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
   input,
   onAcceptSuggestion,
   onRejectSuggestion,
+  currentIngredients,
   className
 }) => {
   const [currentSuggestions, setCurrentSuggestions] = useState<IngredientSuggestion[]>([]);
@@ -91,14 +102,21 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
     }
 
     const searchTerm = input.toLowerCase().trim();
+    
+    // Get ingredients already in pantry
+    const pantryIngredientNames = new Set(
+      currentIngredients.map(ingredient => ingredient.name.toLowerCase())
+    );
+    
     const filtered = commonIngredients.filter(ingredient => 
       ingredient.name.toLowerCase().includes(searchTerm) &&
-      !rejectedSuggestions.has(ingredient.name)
+      !rejectedSuggestions.has(ingredient.name) &&
+      !pantryIngredientNames.has(ingredient.name.toLowerCase())
     ).slice(0, 5); // Limit to 5 suggestions for the stack
 
     setCurrentSuggestions(filtered);
     setCurrentIndex(0);
-  }, [input, rejectedSuggestions]);
+  }, [input, rejectedSuggestions, currentIngredients]);
 
   const handleAccept = (suggestion: IngredientSuggestion) => {
     setSwipeDirection('right');

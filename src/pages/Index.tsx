@@ -219,6 +219,7 @@ const Index = () => {
           onAddIngredients={handleAddIngredients}
           isListening={isListening}
           setIsListening={setIsListening}
+          currentIngredients={ingredients}
         />
 
         <Tabs defaultValue="ingredients" className="space-y-6 mt-8">
