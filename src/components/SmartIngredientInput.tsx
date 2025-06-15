@@ -24,7 +24,6 @@ interface SmartIngredientInputProps {
   }>) => void;
   isListening: boolean;
   setIsListening: (listening: boolean) => void;
-  currentIngredients?: Array<{ name: string; [key: string]: any }>;
 }
 
 const generateUniqueId = () => {
@@ -34,8 +33,7 @@ const generateUniqueId = () => {
 export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
   onAddIngredients,
   isListening,
-  setIsListening,
-  currentIngredients = []
+  setIsListening
 }) => {
   const [textInput, setTextInput] = useState('');
   const [pendingIngredients, setPendingIngredients] = useState<PendingIngredient[]>([]);
@@ -113,20 +111,16 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
   };
 
   const handleAcceptSuggestion = (suggestion: any) => {
-    // Directly add to pantry instead of pending queue for Tinder suggestions
-    const ingredientToAdd = {
-      name: suggestion.name,
-      quantity: suggestion.defaultQuantity,
-      unit: suggestion.defaultUnit,
-      expiryDate: '',
-      category: suggestion.category
-    };
-    
-    onAddIngredients([ingredientToAdd]);
+    addPendingIngredient(
+      suggestion.name,
+      suggestion.defaultQuantity,
+      suggestion.defaultUnit,
+      suggestion.category // Use the category from the suggestion
+    );
     setTextInput('');
     toast({
-      title: "Ingredient added to pantry!",
-      description: `${suggestion.name} has been added to your pantry`,
+      title: "Suggestion accepted",
+      description: `${suggestion.name} added for review`,
     });
   };
 
@@ -231,7 +225,6 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
               input={textInput}
               onAcceptSuggestion={handleAcceptSuggestion}
               onRejectSuggestion={handleRejectSuggestion}
-              currentIngredients={currentIngredients}
             />
           </div>
         </CardContent>
