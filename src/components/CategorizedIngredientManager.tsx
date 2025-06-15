@@ -200,7 +200,7 @@ export const CategorizedIngredientManager: React.FC<CategorizedIngredientManager
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="flex justify-around my-0">
+            <TabsList className="grid gap-3 grid-cols-5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
               {categories.map(category => {
               const Icon = category.icon;
               const count = getCategoryCount(category.id);
