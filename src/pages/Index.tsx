@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { SmartIngredientInput } from '@/components/SmartIngredientInput';
-import { IngredientManager, Ingredient } from '@/components/IngredientManager';
+import { CategorizedIngredientManager, Ingredient } from '@/components/CategorizedIngredientManager';
 import { RecipeManager, Recipe } from '@/components/RecipeManager';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,7 +25,13 @@ const Index = () => {
     const savedRecipes = localStorage.getItem('recipe-app-recipes');
     
     if (savedIngredients) {
-      setIngredients(JSON.parse(savedIngredients));
+      const parsedIngredients = JSON.parse(savedIngredients);
+      // Add category field to existing ingredients if it doesn't exist
+      const ingredientsWithCategory = parsedIngredients.map((ingredient: any) => ({
+        ...ingredient,
+        category: ingredient.category || 'other'
+      }));
+      setIngredients(ingredientsWithCategory);
     }
     
     if (savedRecipes) {
@@ -98,6 +104,7 @@ const Index = () => {
     const ingredientsWithIds = newIngredients.map(ingredient => ({
       ...ingredient,
       id: generateUniqueId(),
+      category: 'other', // Default category for bulk-added ingredients
       dateAdded: new Date().toISOString()
     }));
     
@@ -217,7 +224,7 @@ const Index = () => {
           <TabsList className="grid w-full grid-cols-2 bg-white/80 backdrop-blur-sm">
             <TabsTrigger value="ingredients" className="flex items-center gap-2">
               <Package className="w-4 h-4" />
-              Ingredients ({ingredients.length})
+              Pantry ({ingredients.length})
             </TabsTrigger>
             <TabsTrigger value="recipes" className="flex items-center gap-2">
               <ChefHat className="w-4 h-4" />
@@ -226,7 +233,7 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="ingredients">
-            <IngredientManager
+            <CategorizedIngredientManager
               ingredients={ingredients}
               onAddIngredient={handleAddIngredient}
               onRemoveIngredient={handleRemoveIngredient}
