@@ -88,6 +88,7 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
 }) => {
   const [currentSuggestions, setCurrentSuggestions] = useState<IngredientSuggestion[]>([]);
   const [rejectedSuggestions, setRejectedSuggestions] = useState<Set<string>>(new Set());
+  const [acceptedSuggestions, setAcceptedSuggestions] = useState<Set<string>>(new Set());
   const [processingCard, setProcessingCard] = useState<string | null>(null);
 
   useEffect(() => {
@@ -117,8 +118,8 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
     setProcessingCard(suggestion.name);
     
     setTimeout(() => {
+      setAcceptedSuggestions(prev => new Set([...prev, suggestion.name]));
       onAcceptSuggestion(suggestion);
-      setCurrentSuggestions(prev => prev.filter(s => s.name !== suggestion.name));
       setProcessingCard(null);
     }, 300);
   };
@@ -130,7 +131,6 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
     setTimeout(() => {
       setRejectedSuggestions(prev => new Set([...prev, suggestion.name]));
       onRejectSuggestion(suggestion);
-      setCurrentSuggestions(prev => prev.filter(s => s.name !== suggestion.name));
       setProcessingCard(null);
     }, 300);
   };
@@ -146,75 +146,100 @@ export const TinderStyleSuggestions: React.FC<TinderStyleSuggestionsProps> = ({
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {currentSuggestions.map((suggestion) => (
-          <Card
-            key={suggestion.name}
-            className={cn(
-              "relative shadow-lg transition-all duration-300 bg-white border-2 h-64",
-              processingCard === suggestion.name && "animate-pulse opacity-50"
-            )}
-          >
-            <CardContent className="p-4 h-full flex flex-col justify-between">
-              <div className="text-center">
-                <div className="mb-3">
-                  <Star className="w-6 h-6 mx-auto text-yellow-500 mb-2" />
-                  <h3 className="text-lg font-bold text-gray-800 capitalize">
-                    {suggestion.name}
-                  </h3>
-                </div>
-                
-                <div className="space-y-2">
-                  <Badge 
-                    className={cn("px-2 py-1 text-xs font-medium", getCategoryColor(suggestion.category))}
-                  >
-                    {suggestion.category}
-                  </Badge>
+        {currentSuggestions.map((suggestion) => {
+          const isAccepted = acceptedSuggestions.has(suggestion.name);
+          const isRejected = rejectedSuggestions.has(suggestion.name);
+          
+          return (
+            <Card
+              key={suggestion.name}
+              className={cn(
+                "relative shadow-lg transition-all duration-300 bg-white border-2 h-64",
+                processingCard === suggestion.name && "animate-pulse opacity-50",
+                isAccepted && "border-green-300 bg-green-50",
+                isRejected && "border-red-300 bg-red-50"
+              )}
+            >
+              <CardContent className="p-4 h-full flex flex-col justify-between">
+                <div className="text-center">
+                  <div className="mb-3">
+                    {isAccepted ? (
+                      <Check className="w-6 h-6 mx-auto text-green-600 mb-2" />
+                    ) : isRejected ? (
+                      <X className="w-6 h-6 mx-auto text-red-600 mb-2" />
+                    ) : (
+                      <Star className="w-6 h-6 mx-auto text-yellow-500 mb-2" />
+                    )}
+                    <h3 className="text-lg font-bold text-gray-800 capitalize">
+                      {suggestion.name}
+                    </h3>
+                  </div>
                   
-                  <div className="bg-orange-50 rounded-lg p-2 border border-orange-200">
-                    <div className="text-base font-semibold text-orange-800">
-                      {suggestion.defaultQuantity} {suggestion.defaultUnit}
+                  <div className="space-y-2">
+                    <Badge 
+                      className={cn("px-2 py-1 text-xs font-medium", getCategoryColor(suggestion.category))}
+                    >
+                      {suggestion.category}
+                    </Badge>
+                    
+                    <div className="bg-orange-50 rounded-lg p-2 border border-orange-200">
+                      <div className="text-base font-semibold text-orange-800">
+                        {suggestion.defaultQuantity} {suggestion.defaultUnit}
+                      </div>
+                      <div className="text-xs text-orange-600">Suggested amount</div>
                     </div>
-                    <div className="text-xs text-orange-600">Suggested amount</div>
-                  </div>
-                  
-                  <div className="text-xs text-gray-500">
-                    Units: {suggestion.commonUnits.slice(0, 3).join(', ')}
+                    
+                    <div className="text-xs text-gray-500">
+                      Units: {suggestion.commonUnits.slice(0, 3).join(', ')}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex justify-center gap-2 mt-3">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 text-xs"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleReject(suggestion);
-                  }}
-                  disabled={processingCard === suggestion.name}
-                >
-                  <X className="w-3 h-3 mr-1" />
-                  Pass
-                </Button>
-                <Button
-                  size="sm"
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleAccept(suggestion);
-                  }}
-                  disabled={processingCard === suggestion.name}
-                >
-                  <Heart className="w-3 h-3 mr-1" />
-                  Add
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                <div className="flex justify-center gap-2 mt-3">
+                  {isAccepted ? (
+                    <div className="flex-1 text-center py-2 text-green-600 font-medium text-sm">
+                      ✓ Added to pantry
+                    </div>
+                  ) : isRejected ? (
+                    <div className="flex-1 text-center py-2 text-red-600 font-medium text-sm">
+                      ✗ Rejected
+                    </div>
+                  ) : (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 text-xs"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleReject(suggestion);
+                        }}
+                        disabled={processingCard === suggestion.name}
+                      >
+                        <X className="w-3 h-3 mr-1" />
+                        Pass
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="flex-1 bg-green-600 hover:bg-green-700 text-white text-xs"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleAccept(suggestion);
+                        }}
+                        disabled={processingCard === suggestion.name}
+                      >
+                        <Heart className="w-3 h-3 mr-1" />
+                        Add
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
       
       <div className="text-center mt-4">
