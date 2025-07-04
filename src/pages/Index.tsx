@@ -1,10 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { SmartIngredientInput } from '@/components/SmartIngredientInput';
 import { CategorizedIngredientManager, Ingredient } from '@/components/CategorizedIngredientManager';
 import { RecipeManager, Recipe } from '@/components/RecipeManager';
+import { MealPlanner } from '@/components/MealPlanner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChefHat, Package } from 'lucide-react';
+import { ChefHat, Package, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 // Generate unique ID with timestamp and random component
@@ -200,6 +202,10 @@ const Index = () => {
     }
   };
 
+  const handleUpdateIngredients = (newIngredients: Ingredient[]) => {
+    setIngredients(newIngredients);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-green-50 p-4">
       <div className="max-w-7xl mx-auto">
@@ -219,7 +225,7 @@ const Index = () => {
         />
 
         <Tabs defaultValue="ingredients" className="space-y-6 mt-8">
-          <TabsList className="grid w-full grid-cols-2 bg-white/80 backdrop-blur-sm">
+          <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm">
             <TabsTrigger value="ingredients" className="flex items-center gap-2">
               <Package className="w-4 h-4" />
               Pantry ({ingredients.length})
@@ -227,6 +233,10 @@ const Index = () => {
             <TabsTrigger value="recipes" className="flex items-center gap-2">
               <ChefHat className="w-4 h-4" />
               Recipes ({recipes.length})
+            </TabsTrigger>
+            <TabsTrigger value="meal-planner" className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              Meal Planner
             </TabsTrigger>
           </TabsList>
 
@@ -249,6 +259,14 @@ const Index = () => {
               onUseRecipe={handleUseRecipe}
               matchFilter={matchFilter}
               onMatchFilterChange={setMatchFilter}
+            />
+          </TabsContent>
+
+          <TabsContent value="meal-planner">
+            <MealPlanner
+              recipes={recipes}
+              ingredients={ingredients}
+              onUpdateIngredients={handleUpdateIngredients}
             />
           </TabsContent>
         </Tabs>
