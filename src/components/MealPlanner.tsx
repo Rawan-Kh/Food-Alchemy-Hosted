@@ -3,12 +3,13 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, ChefHat, Plus, Trash2 } from 'lucide-react';
+import { Calendar, ChefHat, Plus, Trash2, ShoppingCart } from 'lucide-react';
 import { Recipe } from './RecipeManager';
 import { Ingredient } from './IngredientManager';
 import { useMealPlanner } from '@/hooks/useMealPlanner';
 import { MealPlanGrid } from './MealPlanGrid';
 import { MealPlanHistory } from './MealPlanHistory';
+import { ShoppingListManager } from './ShoppingListManager';
 import { DAYS_OF_WEEK } from '@/types/mealPlanner';
 
 interface MealPlannerProps {
@@ -25,11 +26,16 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
   const {
     currentWeekPlan,
     mealPlanHistory,
+    currentShoppingList,
     createNewWeekPlan,
     assignRecipeToMeal,
     removeRecipeFromMeal,
     consumeMealPlan,
     cancelMealPlan,
+    generateShoppingListForPlan,
+    toggleShoppingListItem,
+    addShoppingItemToPantry,
+    completeShoppingList,
     getRecipeById
   } = useMealPlanner(recipes, ingredients, onUpdateIngredients);
 
@@ -41,6 +47,13 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
     endDate.setDate(startDate.getDate() + 6);
     
     return `${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`;
+  };
+
+  const getTotalMealsPlanned = () => {
+    if (!currentWeekPlan) return 0;
+    return currentWeekPlan.meals.reduce((count, meal) => {
+      return count + [meal.breakfast, meal.snack, meal.lunch, meal.dinner].filter(Boolean).length;
+    }, 0);
   };
 
   return (
@@ -60,6 +73,16 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
                 </Button>
               ) : (
                 <div className="flex items-center gap-2">
+                  {getTotalMealsPlanned() > 0 && (
+                    <Button 
+                      onClick={generateShoppingListForPlan} 
+                      variant="outline"
+                      className="bg-blue-50 hover:bg-blue-100"
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Generate Shopping List
+                    </Button>
+                  )}
                   <Button 
                     onClick={consumeMealPlan} 
                     variant="default"
@@ -85,9 +108,7 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
                 Week of {getWeekDateRange()}
               </Badge>
               <span>
-                {currentWeekPlan.meals.reduce((count, meal) => {
-                  return count + [meal.breakfast, meal.snack, meal.lunch, meal.dinner].filter(Boolean).length;
-                }, 0)} meals planned
+                {getTotalMealsPlanned()} meals planned
               </span>
             </div>
           )}
@@ -116,6 +137,15 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
           )}
         </CardContent>
       </Card>
+
+      {currentShoppingList && (
+        <ShoppingListManager
+          shoppingList={currentShoppingList}
+          onToggleItem={toggleShoppingListItem}
+          onAddToPantry={addShoppingItemToPantry}
+          onCompleteShoppingList={completeShoppingList}
+        />
+      )}
 
       {mealPlanHistory.length > 0 && (
         <MealPlanHistory 

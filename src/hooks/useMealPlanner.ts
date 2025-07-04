@@ -1,9 +1,11 @@
 
 import { useState, useEffect } from 'react';
 import { WeeklyMealPlan, MealPlan, MealPlanHistory, MealType, DAYS_OF_WEEK } from '@/types/mealPlanner';
+import { ShoppingList, ShoppingListItem } from '@/types/shoppingList';
 import { Recipe } from '@/components/RecipeManager';
 import { Ingredient } from '@/components/IngredientManager';
 import { useToast } from '@/hooks/use-toast';
+import { generateShoppingList } from '@/utils/shoppingListGenerator';
 
 const generateUniqueId = () => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -28,6 +30,7 @@ export const useMealPlanner = (
 ) => {
   const [currentWeekPlan, setCurrentWeekPlan] = useState<WeeklyMealPlan | null>(null);
   const [mealPlanHistory, setMealPlanHistory] = useState<MealPlanHistory[]>([]);
+  const [currentShoppingList, setCurrentShoppingList] = useState<ShoppingList | null>(null);
   const [originalIngredients, setOriginalIngredients] = useState<Ingredient[]>([]);
   const { toast } = useToast();
 
@@ -35,6 +38,7 @@ export const useMealPlanner = (
   useEffect(() => {
     const savedCurrentPlan = localStorage.getItem('meal-planner-current');
     const savedHistory = localStorage.getItem('meal-planner-history');
+    const savedShoppingList = localStorage.getItem('meal-planner-shopping-list');
     
     if (savedCurrentPlan) {
       setCurrentWeekPlan(JSON.parse(savedCurrentPlan));
@@ -42,6 +46,10 @@ export const useMealPlanner = (
     
     if (savedHistory) {
       setMealPlanHistory(JSON.parse(savedHistory));
+    }
+
+    if (savedShoppingList) {
+      setCurrentShoppingList(JSON.parse(savedShoppingList));
     }
   }, []);
 
@@ -55,6 +63,14 @@ export const useMealPlanner = (
   useEffect(() => {
     localStorage.setItem('meal-planner-history', JSON.stringify(mealPlanHistory));
   }, [mealPlanHistory]);
+
+  useEffect(() => {
+    if (currentShoppingList) {
+      localStorage.setItem('meal-planner-shopping-list', JSON.stringify(currentShoppingList));
+    } else {
+      localStorage.removeItem('meal-planner-shopping-list');
+    }
+  }, [currentShoppingList]);
 
   const createNewWeekPlan = () => {
     const weekStarting = getWeekStartDate();
@@ -73,6 +89,7 @@ export const useMealPlanner = (
 
     setCurrentWeekPlan(newPlan);
     setOriginalIngredients([...ingredients]);
+    setCurrentShoppingList(null); // Clear shopping list when creating new plan
     return newPlan;
   };
 
@@ -143,6 +160,57 @@ export const useMealPlanner = (
     onUpdateIngredients(tempIngredients);
   };
 
+  const generateShoppingListForPlan = () => {
+    if (!currentWeekPlan) return;
+
+    const shoppingList = generateShoppingList(currentWeekPlan, recipes, ingredients);
+    setCurrentShoppingList(shoppingList);
+
+    toast({
+      title: "Shopping list created!",
+      description: `Generated shopping list with ${shoppingList.items.length} missing ingredients`,
+    });
+  };
+
+  const toggleShoppingListItem = (itemId: string) => {
+    if (!currentShoppingList) return;
+
+    const updatedList = {
+      ...currentShoppingList,
+      items: currentShoppingList.items.map(item =>
+        item.id === itemId ? { ...item, isChecked: !item.isChecked } : item
+      )
+    };
+
+    setCurrentShoppingList(updatedList);
+  };
+
+  const addShoppingItemToPantry = (item: ShoppingListItem, quantity: number) => {
+    const newIngredient: Ingredient = {
+      id: generateUniqueId(),
+      name: item.ingredientName,
+      quantity,
+      unit: item.unit,
+      expiryDate: '',
+      category: 'other',
+      dateAdded: new Date().toISOString()
+    };
+
+    const updatedIngredients = [...ingredients, newIngredient];
+    onUpdateIngredients(updatedIngredients);
+
+    // Update the shopping list to mark item as checked
+    toggleShoppingListItem(item.id);
+  };
+
+  const completeShoppingList = () => {
+    setCurrentShoppingList(null);
+    toast({
+      title: "Shopping completed!",
+      description: "Shopping list has been cleared",
+    });
+  };
+
   const consumeMealPlan = () => {
     if (!currentWeekPlan) return;
 
@@ -156,6 +224,7 @@ export const useMealPlanner = (
 
     setMealPlanHistory(prev => [historyEntry, ...prev]);
     setCurrentWeekPlan(null);
+    setCurrentShoppingList(null);
     setOriginalIngredients([]);
 
     toast({
@@ -173,6 +242,7 @@ export const useMealPlanner = (
     }
 
     setCurrentWeekPlan(null);
+    setCurrentShoppingList(null);
     setOriginalIngredients([]);
 
     toast({
@@ -188,11 +258,16 @@ export const useMealPlanner = (
   return {
     currentWeekPlan,
     mealPlanHistory,
+    currentShoppingList,
     createNewWeekPlan,
     assignRecipeToMeal,
     removeRecipeFromMeal,
     consumeMealPlan,
     cancelMealPlan,
+    generateShoppingListForPlan,
+    toggleShoppingListItem,
+    addShoppingItemToPantry,
+    completeShoppingList,
     getRecipeById
   };
 };
