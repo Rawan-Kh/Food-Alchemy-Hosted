@@ -63,8 +63,7 @@ export const useMealPlanShopping = (
         quantity,
         unit: item.unit,
         expiryDate: '',
-        dateAdded: new Date().toISOString(),
-        category: 'other'
+        dateAdded: new Date().toISOString()
       };
       updatedIngredients = [...ingredients, newIngredient];
     }
