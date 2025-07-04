@@ -46,12 +46,13 @@ export const RecipeIngredientEditor: React.FC<RecipeIngredientEditorProps> = ({
       </div>
       
       {ingredients.map((ingredient, index) => (
-        <div key={index} className="grid grid-cols-12 gap-2 items-center">
+        <div key={index} className="grid grid-cols-12 gap-2 items-center p-3 bg-gray-50 rounded-lg">
           <div className="col-span-5">
             <Input
               value={ingredient.name}
               onChange={(e) => updateIngredient(index, 'name', e.target.value)}
               placeholder="Ingredient name"
+              className="bg-white"
             />
           </div>
           <div className="col-span-3">
@@ -62,13 +63,14 @@ export const RecipeIngredientEditor: React.FC<RecipeIngredientEditorProps> = ({
               value={ingredient.quantity}
               onChange={(e) => updateIngredient(index, 'quantity', parseFloat(e.target.value) || 0)}
               placeholder="Quantity"
+              className="bg-white"
             />
           </div>
           <div className="col-span-3">
             <select
               value={ingredient.unit}
               onChange={(e) => updateIngredient(index, 'unit', e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-md"
+              className="w-full p-2 border border-gray-300 rounded-md bg-white"
             >
               <option value="pcs">pieces</option>
               <option value="kg">kg</option>
@@ -86,7 +88,8 @@ export const RecipeIngredientEditor: React.FC<RecipeIngredientEditorProps> = ({
               onClick={() => removeIngredient(index)}
               size="sm"
               variant="ghost"
-              className="text-red-500 hover:text-red-700"
+              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+              title="Delete ingredient"
             >
               <Trash2 className="w-4 h-4" />
             </Button>
@@ -95,9 +98,13 @@ export const RecipeIngredientEditor: React.FC<RecipeIngredientEditorProps> = ({
       ))}
       
       {ingredients.length === 0 && (
-        <p className="text-gray-500 text-center py-4">
-          No ingredients added yet. Click "Add Ingredient" to start.
-        </p>
+        <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+          <p className="text-gray-500 mb-2">No ingredients added yet</p>
+          <Button type="button" onClick={addIngredient} variant="outline">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Your First Ingredient
+          </Button>
+        </div>
       )}
     </div>
   );
