@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { WeeklyMealPlan, MealPlan, MealPlanHistory, MealType, DAYS_OF_WEEK } from '@/types/mealPlanner';
 import { ShoppingList, ShoppingListItem } from '@/types/shoppingList';
@@ -192,7 +191,6 @@ export const useMealPlanner = (
       quantity,
       unit: item.unit,
       expiryDate: '',
-      category: 'other',
       dateAdded: new Date().toISOString()
     };
 
