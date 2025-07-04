@@ -41,16 +41,34 @@ export const useMealPlanShopping = (
   };
 
   const addShoppingItemToPantry = (item: ShoppingListItem, quantity: number) => {
-    const newIngredient: Ingredient = {
-      id: generateUniqueId(),
-      name: item.ingredientName,
-      quantity,
-      unit: item.unit,
-      expiryDate: '',
-      dateAdded: new Date().toISOString()
-    };
+    // Check if ingredient already exists in pantry
+    const existingIngredientIndex = ingredients.findIndex(ing =>
+      ing.name.toLowerCase() === item.ingredientName.toLowerCase()
+    );
 
-    const updatedIngredients = [...ingredients, newIngredient];
+    let updatedIngredients: Ingredient[];
+
+    if (existingIngredientIndex !== -1) {
+      // Update existing ingredient quantity
+      updatedIngredients = ingredients.map((ing, index) =>
+        index === existingIngredientIndex
+          ? { ...ing, quantity: ing.quantity + quantity }
+          : ing
+      );
+    } else {
+      // Add new ingredient to pantry
+      const newIngredient: Ingredient = {
+        id: generateUniqueId(),
+        name: item.ingredientName,
+        quantity,
+        unit: item.unit,
+        expiryDate: '',
+        dateAdded: new Date().toISOString(),
+        category: 'other'
+      };
+      updatedIngredients = [...ingredients, newIngredient];
+    }
+
     onUpdateIngredients(updatedIngredients);
 
     // Update the shopping list to mark item as checked

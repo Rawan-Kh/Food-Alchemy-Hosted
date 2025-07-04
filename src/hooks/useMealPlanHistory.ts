@@ -17,7 +17,7 @@ export const useMealPlanHistory = (
       dateConsumed: new Date().toISOString()
     };
 
-    setMealPlanHistory(prev => [historyEntry, ...prev]);
+    setMealPlanHistory([historyEntry, ...mealPlanHistory]);
 
     toast({
       title: "Meal plan consumed!",
