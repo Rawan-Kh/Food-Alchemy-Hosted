@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { WeeklyMealPlan } from '@/types/mealPlanner';
 import { Recipe } from '@/components/RecipeManager';
-import { Ingredient } from '@/components/IngredientManager';
+import { Ingredient } from '@/components/CategorizedIngredientManager';
 
 export const useMealPlanIngredients = (
   recipes: Recipe[],

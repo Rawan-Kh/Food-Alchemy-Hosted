@@ -2,7 +2,7 @@
 import { ShoppingList, ShoppingListItem } from '@/types/shoppingList';
 import { WeeklyMealPlan } from '@/types/mealPlanner';
 import { Recipe } from '@/components/RecipeManager';
-import { Ingredient } from '@/components/IngredientManager';
+import { Ingredient } from '@/components/CategorizedIngredientManager';
 import { generateShoppingList } from '@/utils/shoppingListGenerator';
 import { generateUniqueId } from '@/utils/mealPlanHelpers';
 import { useToast } from '@/hooks/use-toast';
@@ -13,61 +13,61 @@ const determineIngredientCategory = (ingredientName: string): string => {
   
   // Vegetables
   if (['tomato', 'onion', 'garlic', 'carrot', 'potato', 'bell pepper', 'broccoli', 'spinach', 'lettuce', 'cucumber', 'celery', 'mushroom', 'zucchini', 'eggplant', 'cabbage', 'kale', 'cauliflower'].some(veg => name.includes(veg))) {
-    return 'Vegetables';
+    return 'vegetables';
   }
   
   // Fruits
   if (['apple', 'banana', 'orange', 'lemon', 'lime', 'berry', 'grape', 'mango', 'pineapple', 'strawberry', 'blueberry', 'avocado', 'peach', 'pear'].some(fruit => name.includes(fruit))) {
-    return 'Fruits';
+    return 'fruits';
   }
   
   // Meat & Poultry
   if (['chicken', 'beef', 'pork', 'turkey', 'lamb', 'fish', 'salmon', 'tuna', 'shrimp', 'crab', 'lobster', 'bacon', 'ham', 'sausage'].some(meat => name.includes(meat))) {
-    return 'Meat & Poultry';
+    return 'meat';
   }
   
   // Seafood
   if (['fish', 'salmon', 'tuna', 'shrimp', 'crab', 'lobster', 'cod', 'tilapia', 'sardine', 'anchovy', 'scallop', 'oyster', 'mussel', 'clam'].some(seafood => name.includes(seafood))) {
-    return 'Seafood';
+    return 'meat';
   }
   
   // Dairy
   if (['milk', 'cheese', 'butter', 'yogurt', 'cream', 'egg', 'cottage cheese', 'sour cream', 'mozzarella', 'cheddar', 'parmesan'].some(dairy => name.includes(dairy))) {
-    return 'Dairy';
+    return 'dairy';
   }
   
   // Grains & Cereals
   if (['rice', 'pasta', 'bread', 'flour', 'oats', 'quinoa', 'barley', 'wheat', 'noodle', 'cereal', 'couscous', 'bulgur'].some(grain => name.includes(grain))) {
-    return 'Grains & Cereals';
+    return 'grains';
   }
   
   // Herbs & Spices
   if (['basil', 'oregano', 'thyme', 'rosemary', 'parsley', 'cilantro', 'mint', 'sage', 'pepper', 'salt', 'paprika', 'cumin', 'turmeric', 'ginger', 'cinnamon', 'nutmeg', 'clove', 'bay leaf'].some(herb => name.includes(herb))) {
-    return 'Herbs & Spices';
+    return 'spices';
   }
   
   // Condiments & Sauces
   if (['oil', 'vinegar', 'sauce', 'ketchup', 'mustard', 'mayo', 'soy sauce', 'hot sauce', 'bbq sauce', 'salsa', 'honey', 'syrup', 'jam', 'pickle'].some(condiment => name.includes(condiment))) {
-    return 'Condiments & Sauces';
+    return 'pantry';
   }
   
   // Beverages
   if (['water', 'juice', 'soda', 'tea', 'coffee', 'beer', 'wine', 'cocktail', 'smoothie', 'shake'].some(beverage => name.includes(beverage))) {
-    return 'Beverages';
+    return 'beverages';
   }
   
   // Canned Goods
   if (['can', 'canned', 'jar', 'jarred', 'bottled', 'preserved'].some(canned => name.includes(canned))) {
-    return 'Canned Goods';
+    return 'pantry';
   }
   
   // Baking
   if (['sugar', 'baking powder', 'baking soda', 'vanilla', 'yeast', 'cocoa', 'chocolate chip', 'almond extract'].some(baking => name.includes(baking))) {
-    return 'Baking';
+    return 'pantry';
   }
   
   // Default category
-  return 'Other';
+  return 'other';
 };
 
 export const useMealPlanShopping = (

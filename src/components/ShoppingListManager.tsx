@@ -7,7 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { ShoppingCart, Plus, Check } from 'lucide-react';
 import { ShoppingList, ShoppingListItem } from '@/types/shoppingList';
-import { Ingredient } from '@/components/IngredientManager';
+import { Ingredient } from '@/components/CategorizedIngredientManager';
 import { useToast } from '@/hooks/use-toast';
 
 interface ShoppingListManagerProps {

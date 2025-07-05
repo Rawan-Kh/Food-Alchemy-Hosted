@@ -1,7 +1,7 @@
 
 import { WeeklyMealPlan } from '@/types/mealPlanner';
 import { Recipe } from '@/components/RecipeManager';
-import { Ingredient } from '@/components/IngredientManager';
+import { Ingredient } from '@/components/CategorizedIngredientManager';
 import { ShoppingList, ShoppingListItem } from '@/types/shoppingList';
 
 const generateUniqueId = () => {
