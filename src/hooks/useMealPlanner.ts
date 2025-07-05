@@ -1,6 +1,6 @@
 
 import { Recipe } from '@/components/RecipeManager';
-import { Ingredient } from '@/components/IngredientManager';
+import { Ingredient } from '@/components/CategorizedIngredientManager';
 import { useMealPlanStorage } from './useMealPlanStorage';
 import { useMealPlanWeek } from './useMealPlanWeek';
 import { useMealPlanIngredients } from './useMealPlanIngredients';
@@ -80,10 +80,57 @@ export const useMealPlanner = (
   const consumeMealPlan = () => {
     if (!currentWeekPlan) return;
 
+    // Calculate and permanently consume ingredients
+    let updatedIngredients = [...ingredients];
+    const usedRecipeIds: string[] = [];
+
+    // Collect all recipe IDs used in the meal plan
+    currentWeekPlan.meals.forEach(meal => {
+      [meal.breakfast, meal.snack, meal.lunch, meal.dinner].forEach(recipeId => {
+        if (recipeId) usedRecipeIds.push(recipeId);
+      });
+    });
+
+    // Deduct ingredients for each used recipe
+    usedRecipeIds.forEach(recipeId => {
+      const recipe = recipes.find(r => r.id === recipeId);
+      if (recipe) {
+        recipe.ingredients.forEach(recipeIngredient => {
+          const ingredientIndex = updatedIngredients.findIndex(ingredient =>
+            ingredient.name.toLowerCase().includes(recipeIngredient.name.toLowerCase()) ||
+            recipeIngredient.name.toLowerCase().includes(ingredient.name.toLowerCase())
+          );
+          
+          if (ingredientIndex !== -1) {
+            const availableQuantity = updatedIngredients[ingredientIndex].quantity;
+            const requiredQuantity = recipeIngredient.quantity;
+            
+            if (availableQuantity >= requiredQuantity) {
+              updatedIngredients[ingredientIndex] = {
+                ...updatedIngredients[ingredientIndex],
+                quantity: Math.max(0, availableQuantity - requiredQuantity)
+              };
+            }
+          }
+        });
+      }
+    });
+
+    // Remove ingredients with zero quantity
+    updatedIngredients = updatedIngredients.filter(ingredient => ingredient.quantity > 0);
+
+    // Update the ingredients permanently
+    onUpdateIngredients(updatedIngredients);
+
     addToHistory(currentWeekPlan);
     setCurrentWeekPlan(null);
     setCurrentShoppingList(null);
     setOriginalIngredients([]);
+
+    toast({
+      title: "Meal plan consumed!",
+      description: "Ingredients have been permanently used and zero-quantity items removed from pantry.",
+    });
   };
 
   const cancelMealPlan = () => {

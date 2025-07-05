@@ -1,7 +1,7 @@
 
 import { WeeklyMealPlan, MealPlan, MealType, DAYS_OF_WEEK } from '@/types/mealPlanner';
 import { generateUniqueId, getWeekStartDate } from '@/utils/mealPlanHelpers';
-import { Ingredient } from '@/components/IngredientManager';
+import { Ingredient } from '@/components/CategorizedIngredientManager';
 
 export const useMealPlanWeek = (
   currentWeekPlan: WeeklyMealPlan | null,
