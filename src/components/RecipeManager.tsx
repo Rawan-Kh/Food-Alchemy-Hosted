@@ -3,11 +3,12 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, ChefHat } from 'lucide-react';
-import { Ingredient } from './IngredientManager';
+import { Ingredient } from './CategorizedIngredientManager';
 import { FreeRecipeScrapingDialog } from './FreeRecipeScrapingDialog';
 import { RecipeForm } from './RecipeForm';
 import { RecipeCard } from './RecipeCard';
 import { RecipeFilters } from './RecipeFilters';
+import { RecipeEditModal } from './RecipeEditModal';
 import { useRecipeManager } from '@/hooks/useRecipeManager';
 
 export interface Recipe {
@@ -47,6 +48,7 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
     showAddForm,
     setShowAddForm,
     editingRecipe,
+    showEditModal,
     searchTerm,
     setSearchTerm,
     formData,
@@ -89,18 +91,27 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
               onMatchFilterChange={onMatchFilterChange}
             />
 
-            {(showAddForm || editingRecipe) && (
+            {showAddForm && (
               <RecipeForm
                 formData={formData}
-                isEditing={!!editingRecipe}
+                isEditing={false}
                 onFormDataChange={setFormData}
-                onSubmit={editingRecipe ? handleUpdateRecipe : handleAddRecipe}
-                onCancel={editingRecipe ? handleCancelEdit : () => setShowAddForm(false)}
+                onSubmit={handleAddRecipe}
+                onCancel={() => setShowAddForm(false)}
               />
             )}
           </div>
         </CardContent>
       </Card>
+
+      <RecipeEditModal
+        isOpen={showEditModal}
+        onClose={handleCancelEdit}
+        recipe={editingRecipe}
+        formData={formData}
+        onFormDataChange={setFormData}
+        onSubmit={handleUpdateRecipe}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredRecipes.map((recipe) => {

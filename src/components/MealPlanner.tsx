@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, ChefHat, Plus, Trash2, ShoppingCart } from 'lucide-react';
 import { Recipe } from './RecipeManager';
-import { Ingredient } from './IngredientManager';
+import { Ingredient } from './CategorizedIngredientManager';
 import { useMealPlanner } from '@/hooks/useMealPlanner';
 import { MealPlanGrid } from './MealPlanGrid';
 import { MealPlanHistory } from './MealPlanHistory';

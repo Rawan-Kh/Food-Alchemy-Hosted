@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Recipe } from '@/components/RecipeManager';
-import { Ingredient } from '@/components/IngredientManager';
+import { Ingredient } from '@/components/CategorizedIngredientManager';
 import { useToast } from '@/hooks/use-toast';
 
 export const useRecipeManager = (
@@ -14,6 +14,7 @@ export const useRecipeManager = (
 ) => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
     name: '',
@@ -96,6 +97,7 @@ export const useRecipeManager = (
       source: recipe.source
     });
     setShowAddForm(false);
+    setShowEditModal(true);
   };
 
   const handleUpdateRecipe = () => {
@@ -111,6 +113,7 @@ export const useRecipeManager = (
     onUpdateRecipe(editingRecipe.id, formData);
     resetForm();
     setEditingRecipe(null);
+    setShowEditModal(false);
     toast({
       title: "Recipe updated!",
       description: `${formData.name} has been updated`,
@@ -129,6 +132,7 @@ export const useRecipeManager = (
 
   const handleCancelEdit = () => {
     setEditingRecipe(null);
+    setShowEditModal(false);
     resetForm();
   };
 
@@ -136,6 +140,7 @@ export const useRecipeManager = (
     showAddForm,
     setShowAddForm,
     editingRecipe,
+    showEditModal,
     searchTerm,
     setSearchTerm,
     formData,
