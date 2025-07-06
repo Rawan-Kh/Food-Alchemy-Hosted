@@ -47,7 +47,7 @@ export const useMealPlanner = (
   );
 
   // History management
-  const { addToHistory } = useMealPlanHistory(mealPlanHistory, setMealPlanHistory);
+  const { addToHistory, deleteFromHistory } = useMealPlanHistory(mealPlanHistory, setMealPlanHistory);
 
   // Shopping list management
   const {
@@ -170,6 +170,7 @@ export const useMealPlanner = (
     toggleShoppingListItem,
     addShoppingItemToPantry,
     completeShoppingList,
-    getRecipeById
+    getRecipeById,
+    deleteFromHistory
   };
 };

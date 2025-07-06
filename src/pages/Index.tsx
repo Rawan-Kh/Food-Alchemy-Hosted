@@ -4,9 +4,9 @@ import { CategorizedIngredientManager, Ingredient } from '@/components/Categoriz
 import { RecipeManager, Recipe } from '@/components/RecipeManager';
 import { MealPlanner } from '@/components/MealPlanner';
 import { UserMenu } from '@/components/UserMenu';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BottomNavigation } from '@/components/BottomNavigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChefHat, Package, Calendar } from 'lucide-react';
+import { ChefHat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 // Generate unique ID with timestamp and random component
@@ -18,6 +18,7 @@ const Index = () => {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [matchFilter, setMatchFilter] = useState(50);
+  const [activeTab, setActiveTab] = useState('ingredients');
   const { toast } = useToast();
 
   const handleAddIngredients = (newIngredients: Array<{
@@ -206,8 +207,45 @@ const Index = () => {
     localStorage.setItem('recipe-app-recipes', JSON.stringify(recipes));
   }, [recipes]);
 
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'ingredients':
+        return (
+          <CategorizedIngredientManager
+            ingredients={ingredients}
+            onAddIngredient={handleAddIngredient}
+            onRemoveIngredient={handleRemoveIngredient}
+            onUpdateQuantity={handleUpdateQuantity}
+          />
+        );
+      case 'recipes':
+        return (
+          <RecipeManager
+            recipes={recipes}
+            ingredients={ingredients}
+            onAddRecipe={handleAddRecipe}
+            onUpdateRecipe={handleUpdateRecipe}
+            onDeleteRecipe={handleDeleteRecipe}
+            onUseRecipe={handleUseRecipe}
+            matchFilter={matchFilter}
+            onMatchFilterChange={setMatchFilter}
+          />
+        );
+      case 'meal-planner':
+        return (
+          <MealPlanner
+            recipes={recipes}
+            ingredients={ingredients}
+            onUpdateIngredients={handleUpdateIngredients}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-green-50 p-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-green-50 p-4 pb-24">
       <div className="max-w-7xl mx-auto">
         <header className="text-center mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -227,52 +265,16 @@ const Index = () => {
           currentIngredients={ingredients}
         />
 
-        <Tabs defaultValue="ingredients" className="space-y-6 mt-8">
-          <TabsList className="grid w-full grid-cols-3 bg-white/80 backdrop-blur-sm">
-            <TabsTrigger value="ingredients" className="flex items-center gap-2">
-              <Package className="w-4 h-4" />
-              Pantry ({ingredients.length})
-            </TabsTrigger>
-            <TabsTrigger value="recipes" className="flex items-center gap-2">
-              <ChefHat className="w-4 h-4" />
-              Recipes ({recipes.length})
-            </TabsTrigger>
-            <TabsTrigger value="meal-planner" className="flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
-              Meal Planner
-            </TabsTrigger>
-          </TabsList>
+        <div className="mt-8">
+          {renderTabContent()}
+        </div>
 
-          <TabsContent value="ingredients">
-            <CategorizedIngredientManager
-              ingredients={ingredients}
-              onAddIngredient={handleAddIngredient}
-              onRemoveIngredient={handleRemoveIngredient}
-              onUpdateQuantity={handleUpdateQuantity}
-            />
-          </TabsContent>
-
-          <TabsContent value="recipes">
-            <RecipeManager
-              recipes={recipes}
-              ingredients={ingredients}
-              onAddRecipe={handleAddRecipe}
-              onUpdateRecipe={handleUpdateRecipe}
-              onDeleteRecipe={handleDeleteRecipe}
-              onUseRecipe={handleUseRecipe}
-              matchFilter={matchFilter}
-              onMatchFilterChange={setMatchFilter}
-            />
-          </TabsContent>
-
-          <TabsContent value="meal-planner">
-            <MealPlanner
-              recipes={recipes}
-              ingredients={ingredients}
-              onUpdateIngredients={handleUpdateIngredients}
-            />
-          </TabsContent>
-        </Tabs>
+        <BottomNavigation
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          ingredientsCount={ingredients.length}
+          recipesCount={recipes.length}
+        />
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ import { Recipe } from './RecipeManager';
 import { Ingredient } from './CategorizedIngredientManager';
 import { useMealPlanner } from '@/hooks/useMealPlanner';
 import { MealPlanGrid } from './MealPlanGrid';
-import { MealPlanHistory } from './MealPlanHistory';
+import { MealPlanHistoryWithDelete } from './MealPlanHistoryWithDelete';
 import { ShoppingListManager } from './ShoppingListManager';
 import { DAYS_OF_WEEK } from '@/types/mealPlanner';
 
@@ -36,7 +36,8 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
     toggleShoppingListItem,
     addShoppingItemToPantry,
     completeShoppingList,
-    getRecipeById
+    getRecipeById,
+    deleteFromHistory
   } = useMealPlanner(recipes, ingredients, onUpdateIngredients);
 
   const getWeekDateRange = () => {
@@ -57,7 +58,7 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -148,9 +149,10 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
       )}
 
       {mealPlanHistory.length > 0 && (
-        <MealPlanHistory 
+        <MealPlanHistoryWithDelete 
           history={mealPlanHistory}
           getRecipeById={getRecipeById}
+          onDeleteHistory={deleteFromHistory}
         />
       )}
     </div>

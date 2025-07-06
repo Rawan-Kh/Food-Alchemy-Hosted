@@ -25,7 +25,18 @@ export const useMealPlanHistory = (
     });
   };
 
+  const deleteFromHistory = (historyId: string) => {
+    const updatedHistory = mealPlanHistory.filter(entry => entry.id !== historyId);
+    setMealPlanHistory(updatedHistory);
+
+    toast({
+      title: "History deleted",
+      description: "The meal plan history entry has been removed.",
+    });
+  };
+
   return {
-    addToHistory
+    addToHistory,
+    deleteFromHistory
   };
 };
