@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, ChefHat } from 'lucide-react';
@@ -9,6 +9,7 @@ import { RecipeForm } from './RecipeForm';
 import { RecipeCard } from './RecipeCard';
 import { RecipeFilters } from './RecipeFilters';
 import { RecipeEditModal } from './RecipeEditModal';
+import { RecipeDetailsModal } from './RecipeDetailsModal';
 import { useRecipeManager } from '@/hooks/useRecipeManager';
 
 export interface Recipe {
@@ -44,6 +45,9 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
   matchFilter,
   onMatchFilterChange
 }) => {
+  const [selectedRecipeForDetails, setSelectedRecipeForDetails] = useState<Recipe | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+
   const {
     showAddForm,
     setShowAddForm,
@@ -63,6 +67,16 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
   } = useRecipeManager(recipes, ingredients, onAddRecipe, onUpdateRecipe, onDeleteRecipe, onUseRecipe);
 
   const filteredRecipes = getFilteredRecipes(matchFilter);
+
+  const handleViewDetails = (recipe: Recipe) => {
+    setSelectedRecipeForDetails(recipe);
+    setShowDetailsModal(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setSelectedRecipeForDetails(null);
+    setShowDetailsModal(false);
+  };
 
   return (
     <div className="space-y-6">
@@ -113,6 +127,26 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
         onSubmit={handleUpdateRecipe}
       />
 
+      <RecipeDetailsModal
+        recipe={selectedRecipeForDetails}
+        isOpen={showDetailsModal}
+        onClose={handleCloseDetailsModal}
+        ingredients={ingredients}
+        matchPercentage={selectedRecipeForDetails ? calculateMatchPercentage(selectedRecipeForDetails) : 0}
+        onEdit={(recipe) => {
+          handleCloseDetailsModal();
+          handleEditRecipe(recipe);
+        }}
+        onDelete={(recipe) => {
+          handleCloseDetailsModal();
+          handleDeleteRecipe(recipe);
+        }}
+        onUse={(recipe) => {
+          handleCloseDetailsModal();
+          onUseRecipe(recipe);
+        }}
+      />
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredRecipes.map((recipe) => {
           const matchPercentage = calculateMatchPercentage(recipe);
@@ -125,6 +159,7 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
               onEdit={handleEditRecipe}
               onDelete={handleDeleteRecipe}
               onUse={onUseRecipe}
+              onViewDetails={handleViewDetails}
             />
           );
         })}

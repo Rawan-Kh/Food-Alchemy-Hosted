@@ -211,12 +211,18 @@ const Index = () => {
     switch (activeTab) {
       case 'ingredients':
         return (
-          <CategorizedIngredientManager
-            ingredients={ingredients}
-            onAddIngredient={handleAddIngredient}
-            onRemoveIngredient={handleRemoveIngredient}
-            onUpdateQuantity={handleUpdateQuantity}
-          />
+          <div className="space-y-6">
+            <SmartIngredientInput
+              onAddIngredients={handleAddIngredients}
+              currentIngredients={ingredients}
+            />
+            <CategorizedIngredientManager
+              ingredients={ingredients}
+              onAddIngredient={handleAddIngredient}
+              onRemoveIngredient={handleRemoveIngredient}
+              onUpdateQuantity={handleUpdateQuantity}
+            />
+          </div>
         );
       case 'recipes':
         return (
@@ -259,11 +265,6 @@ const Index = () => {
             Manage your ingredients and discover recipes with smart suggestions
           </p>
         </header>
-
-        <SmartIngredientInput
-          onAddIngredients={handleAddIngredients}
-          currentIngredients={ingredients}
-        />
 
         <div className="mt-8">
           {renderTabContent()}

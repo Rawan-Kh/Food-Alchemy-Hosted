@@ -1,14 +1,11 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Users, Edit, Trash2 } from 'lucide-react';
+import { Clock, Users, Edit, Trash2, Eye } from 'lucide-react';
 import { Recipe } from './RecipeManager';
 import { Ingredient } from './IngredientManager';
-import { RecipeIngredientsList } from './RecipeIngredientsList';
-import { RecipeInstructions } from './RecipeInstructions';
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -17,6 +14,7 @@ interface RecipeCardProps {
   onEdit: (recipe: Recipe) => void;
   onDelete: (recipe: Recipe) => void;
   onUse: (recipe: Recipe) => void;
+  onViewDetails: (recipe: Recipe) => void;
 }
 
 export const RecipeCard: React.FC<RecipeCardProps> = ({
@@ -25,7 +23,8 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
   matchPercentage,
   onEdit,
   onDelete,
-  onUse
+  onUse,
+  onViewDetails
 }) => {
   return (
     <Card className="flex flex-col">
@@ -42,6 +41,14 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
           </div>
         </div>
         <div className="flex gap-2 mt-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onViewDetails(recipe)}
+            className="text-gray-600 hover:text-gray-800"
+          >
+            <Eye className="w-4 h-4" />
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -72,34 +79,28 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
           </div>
         </div>
 
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="description">
-            <AccordionTrigger className="text-sm font-medium">
-              Description
-            </AccordionTrigger>
-            <AccordionContent>
-              <p className="text-sm text-gray-600">{recipe.description}</p>
-            </AccordionContent>
-          </AccordionItem>
-          
-          <RecipeIngredientsList 
-            ingredients={recipe.ingredients}
-            availableIngredients={ingredients}
-          />
-          <RecipeInstructions instructions={recipe.instructions} />
-        </Accordion>
+        <p className="text-sm text-gray-600 line-clamp-3">{recipe.description}</p>
 
         <div className="flex-1">
           <p className="text-xs text-gray-500">Source: {recipe.source}</p>
         </div>
 
-        <Button 
-          onClick={() => onUse(recipe)} 
-          className="w-full"
-          disabled={matchPercentage < 100}
-        >
-          {matchPercentage === 100 ? 'Cook This Recipe' : 'Missing Ingredients'}
-        </Button>
+        <div className="space-y-2">
+          <Button 
+            onClick={() => onViewDetails(recipe)} 
+            variant="outline"
+            className="w-full"
+          >
+            View Details
+          </Button>
+          <Button 
+            onClick={() => onUse(recipe)} 
+            className="w-full"
+            disabled={matchPercentage < 100}
+          >
+            {matchPercentage === 100 ? 'Cook This Recipe' : 'Missing Ingredients'}
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
