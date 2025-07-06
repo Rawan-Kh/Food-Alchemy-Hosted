@@ -53,7 +53,7 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
                 <Plus className="w-4 h-4 mr-2" />
                 Create New Meal Plan
               </Button>
-            </div> : <div className="space-y-6">
+            </div> : <div className="space-y-6 overflow-auto ">
               <div className="flex justify-between items-center flex-wrap ">
                 <div>
                   <h3 className="font-semibold text-base">
