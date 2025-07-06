@@ -110,7 +110,7 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
           shoppingList={currentShoppingList}
           onToggleItem={toggleShoppingListItem}
           onAddToPantry={addShoppingItemToPantry}
-          onCompleteList={completeShoppingList}
+          onCompleteShoppingList={completeShoppingList}
         />
       )}
 
