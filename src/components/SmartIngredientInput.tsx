@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -7,13 +6,11 @@ import { TinderStyleSuggestions } from './TinderStyleSuggestions';
 import { IngredientEditor, PendingIngredient } from './IngredientEditor';
 import { Plus, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
 interface ParsedIngredient {
   name: string;
   quantity?: number;
   unit?: string;
 }
-
 interface Ingredient {
   id: string;
   name: string;
@@ -23,7 +20,6 @@ interface Ingredient {
   category: string;
   dateAdded: string;
 }
-
 interface SmartIngredientInputProps {
   onAddIngredients: (ingredients: Array<{
     name: string;
@@ -34,25 +30,20 @@ interface SmartIngredientInputProps {
   }>) => void;
   currentIngredients: Ingredient[];
 }
-
 const generateUniqueId = () => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
-
 export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
   onAddIngredients,
   currentIngredients
 }) => {
   const [textInput, setTextInput] = useState('');
   const [pendingIngredients, setPendingIngredients] = useState<PendingIngredient[]>([]);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const parseIngredientsFromText = (text: string): ParsedIngredient[] => {
-    const ingredientStrings = text
-      .split(/[,;]+/)
-      .map(str => str.trim())
-      .filter(str => str.length > 0);
-
+    const ingredientStrings = text.split(/[,;]+/).map(str => str.trim()).filter(str => str.length > 0);
     return ingredientStrings.map(ingredientStr => {
       // Try to match patterns like "2 cups flour", "3 tomatoes", "1 kg chicken"
       const quantityUnitMatch = ingredientStr.match(/^(\d+(?:\.\d+)?)\s*([a-zA-Z]+)\s+(.+)$/);
@@ -81,13 +72,7 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
       };
     });
   };
-
-  const addPendingIngredient = (
-    name: string,
-    quantity: number = 1,
-    unit: string = 'pcs',
-    category: string = 'other'
-  ) => {
+  const addPendingIngredient = (name: string, quantity: number = 1, unit: string = 'pcs', category: string = 'other') => {
     const newIngredient: PendingIngredient = {
       id: generateUniqueId(),
       name,
@@ -97,27 +82,19 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
     };
     setPendingIngredients(prev => [...prev, newIngredient]);
   };
-
   const handleTextInputSubmit = () => {
     if (!textInput.trim()) return;
-
     const parsed = parseIngredientsFromText(textInput);
     parsed.forEach(ingredient => {
-      addPendingIngredient(
-        ingredient.name,
-        ingredient.quantity || 1,
-        ingredient.unit || 'pcs',
-        'other' // Default category for manually typed ingredients
+      addPendingIngredient(ingredient.name, ingredient.quantity || 1, ingredient.unit || 'pcs', 'other' // Default category for manually typed ingredients
       );
     });
-
     setTextInput('');
     toast({
       title: "Ingredients added for review",
-      description: `Added ${parsed.length} ingredient(s) to review queue`,
+      description: `Added ${parsed.length} ingredient(s) to review queue`
     });
   };
-
   const handleAcceptSuggestion = (suggestion: any) => {
     // Add directly to pantry instead of pending queue
     const ingredientToAdd = {
@@ -127,34 +104,28 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
       expiryDate: '',
       category: suggestion.category
     };
-    
     onAddIngredients([ingredientToAdd]);
     setTextInput('');
     toast({
       title: "Added to pantry!",
-      description: `${suggestion.name} has been added to your pantry`,
+      description: `${suggestion.name} has been added to your pantry`
     });
   };
-
   const handleRejectSuggestion = (suggestion: any) => {
     toast({
       title: "Suggestion rejected",
-      description: `${suggestion.name} will not be suggested again`,
+      description: `${suggestion.name} will not be suggested again`
     });
   };
-
   const handleUpdatePendingIngredient = (id: string, updates: Partial<PendingIngredient>) => {
-    setPendingIngredients(prev =>
-      prev.map(ingredient =>
-        ingredient.id === id ? { ...ingredient, ...updates } : ingredient
-      )
-    );
+    setPendingIngredients(prev => prev.map(ingredient => ingredient.id === id ? {
+      ...ingredient,
+      ...updates
+    } : ingredient));
   };
-
   const handleRemovePendingIngredient = (id: string) => {
     setPendingIngredients(prev => prev.filter(ingredient => ingredient.id !== id));
   };
-
   const handleConfirmAllIngredients = () => {
     const ingredientsToAdd = pendingIngredients.map(ingredient => ({
       name: ingredient.name,
@@ -163,26 +134,21 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
       expiryDate: ingredient.expiryDate || '',
       category: ingredient.category || 'other'
     }));
-
     onAddIngredients(ingredientsToAdd);
     setPendingIngredients([]);
-    
     toast({
       title: "Ingredients added!",
-      description: `Added ${ingredientsToAdd.length} ingredient(s) to your pantry`,
+      description: `Added ${ingredientsToAdd.length} ingredient(s) to your pantry`
     });
   };
-
   const handleClearAllIngredients = () => {
     setPendingIngredients([]);
     toast({
       title: "Queue cleared",
-      description: "All pending ingredients have been removed",
+      description: "All pending ingredients have been removed"
     });
   };
-
-  return (
-    <div className="space-y-4">
+  return <div className="space-y-4">
       <Card className="bg-white/80 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -192,42 +158,21 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="flex flex-col md:flex-row gap-4 items-center ">
               <div className="flex-1">
-                <Input
-                  placeholder="Type ingredients (e.g., '2 cups flour, 3 tomatoes, 1 kg chicken')"
-                  value={textInput}
-                  onChange={(e) => setTextInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleTextInputSubmit()}
-                />
+                <Input placeholder="Type ingredients (e.g., '2 cups flour, 3 tomatoes, 1 kg chicken')" value={textInput} onChange={e => setTextInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleTextInputSubmit()} className="min-w-72 " />
               </div>
-              <Button 
-                onClick={handleTextInputSubmit} 
-                disabled={!textInput.trim()}
-                className="bg-orange-600 hover:bg-orange-700"
-              >
+              <Button onClick={handleTextInputSubmit} disabled={!textInput.trim()} className="bg-orange-600 hover:bg-orange-700">
                 <Plus className="w-4 h-4 mr-1" />
                 Add to Queue
               </Button>
             </div>
 
-            <TinderStyleSuggestions
-              input={textInput}
-              onAcceptSuggestion={handleAcceptSuggestion}
-              onRejectSuggestion={handleRejectSuggestion}
-              currentIngredients={currentIngredients}
-            />
+            <TinderStyleSuggestions input={textInput} onAcceptSuggestion={handleAcceptSuggestion} onRejectSuggestion={handleRejectSuggestion} currentIngredients={currentIngredients} />
           </div>
         </CardContent>
       </Card>
 
-      <IngredientEditor
-        ingredients={pendingIngredients}
-        onUpdateIngredient={handleUpdatePendingIngredient}
-        onRemoveIngredient={handleRemovePendingIngredient}
-        onConfirmAll={handleConfirmAllIngredients}
-        onClearAll={handleClearAllIngredients}
-      />
-    </div>
-  );
+      <IngredientEditor ingredients={pendingIngredients} onUpdateIngredient={handleUpdatePendingIngredient} onRemoveIngredient={handleRemovePendingIngredient} onConfirmAll={handleConfirmAllIngredients} onClearAll={handleClearAllIngredients} />
+    </div>;
 };
