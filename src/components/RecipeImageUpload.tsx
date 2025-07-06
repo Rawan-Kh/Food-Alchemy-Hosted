@@ -1,7 +1,8 @@
+
 import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Upload, X, Image } from 'lucide-react';
+import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface RecipeImageUploadProps {
@@ -133,7 +134,7 @@ export const RecipeImageUpload: React.FC<RecipeImageUploadProps> = ({
           onDragLeave={() => setIsDragging(false)}
           onClick={() => fileInputRef.current?.click()}
         >
-          <Image className="w-12 h-12 mx-auto text-gray-400 mb-2" />
+          <ImageIcon className="w-12 h-12 mx-auto text-gray-400 mb-2" />
           <p className="text-sm text-gray-600 mb-2">
             Drop an image here or click to upload
           </p>
