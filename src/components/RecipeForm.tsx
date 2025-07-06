@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -125,7 +124,7 @@ export const RecipeForm: React.FC<RecipeFormProps> = ({
 
         <RecipeIngredientEditor
           ingredients={formData.ingredients}
-          onChange={(ingredients) => updateFormData('ingredients', ingredients)}
+          onUpdateIngredients={(ingredients) => updateFormData('ingredients', ingredients)}
         />
 
         <div>
