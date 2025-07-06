@@ -83,6 +83,16 @@ export const RecipeDetailsModal: React.FC<RecipeDetailsModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-6">
+          {recipe.image && (
+            <div className="w-full h-64 overflow-hidden rounded-lg">
+              <img
+                src={recipe.image}
+                alt={recipe.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+
           <div>
             <h3 className="font-semibold mb-2">Description</h3>
             <p className="text-gray-600">{recipe.description}</p>

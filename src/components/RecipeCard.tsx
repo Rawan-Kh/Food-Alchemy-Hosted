@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Users, Edit, Trash2, Eye } from 'lucide-react';
+import { Clock, Users, Edit, Trash2, Eye, Image } from 'lucide-react';
 import { Recipe } from './RecipeManager';
 import { Ingredient } from './IngredientManager';
 
@@ -28,7 +28,17 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
 }) => {
   return (
     <Card className="flex flex-col">
-      <CardHeader>
+      {recipe.image && (
+        <div className="w-full h-48 overflow-hidden rounded-t-lg">
+          <img
+            src={recipe.image}
+            alt={recipe.name}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
+      
+      <CardHeader className={recipe.image ? 'pb-2' : ''}>
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg">{recipe.name}</CardTitle>
           <div className="flex items-center gap-2">

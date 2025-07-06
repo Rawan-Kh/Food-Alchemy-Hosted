@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Recipe } from '@/components/RecipeManager';
 import { Ingredient } from '@/components/CategorizedIngredientManager';
@@ -23,7 +22,8 @@ export const useRecipeManager = (
     instructions: [''],
     cookingTime: 30,
     servings: 4,
-    source: 'Manual Entry'
+    source: 'Manual Entry',
+    image: undefined as string | undefined
   });
   const { toast } = useToast();
 
@@ -35,7 +35,8 @@ export const useRecipeManager = (
       instructions: [''],
       cookingTime: 30,
       servings: 4,
-      source: 'Manual Entry'
+      source: 'Manual Entry',
+      image: undefined
     });
   };
 
@@ -94,7 +95,8 @@ export const useRecipeManager = (
       instructions: [...recipe.instructions],
       cookingTime: recipe.cookingTime,
       servings: recipe.servings,
-      source: recipe.source
+      source: recipe.source,
+      image: recipe.image
     });
     setShowAddForm(false);
     setShowEditModal(true);

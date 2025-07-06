@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +21,7 @@ export interface Recipe {
   servings: number;
   source: string;
   dateAdded: string;
+  image?: string;
 }
 
 interface RecipeManagerProps {

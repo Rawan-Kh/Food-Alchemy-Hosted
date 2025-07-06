@@ -24,6 +24,15 @@ export class FreeScrapingService {
       if (recipe) {
         console.log('Successfully scraped recipe:', recipe.name);
         recipe.ingredients = IngredientUtils.cleanAndDeduplicateIngredients(recipe.ingredients);
+        
+        // Try to extract recipe image
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const imageUrl = this.extractRecipeImage(doc, url);
+        if (imageUrl) {
+          recipe.image = imageUrl;
+        }
+        
         return { success: true, recipe };
       }
       
@@ -49,5 +58,34 @@ export class FreeScrapingService {
     
     // Fallback to HTML parsing
     return HtmlParser.parseRecipeFromHTML(html, url);
+  }
+
+  private static extractRecipeImage(doc: Document, baseUrl: string): string | undefined {
+    // Try multiple selectors for recipe images
+    const imageSelectors = [
+      'img[class*="recipe"]:first-of-type',
+      'img[class*="hero"]:first-of-type', 
+      'img[class*="featured"]:first-of-type',
+      '.recipe-image img:first-of-type',
+      '.hero-image img:first-of-type',
+      'article img:first-of-type',
+      '.entry-content img:first-of-type'
+    ];
+
+    for (const selector of imageSelectors) {
+      const img = doc.querySelector(selector) as HTMLImageElement;
+      if (img && img.src) {
+        // Convert relative URLs to absolute
+        try {
+          const absoluteUrl = new URL(img.src, baseUrl).href;
+          return absoluteUrl;
+        } catch {
+          // If URL parsing fails, skip this image
+          continue;
+        }
+      }
+    }
+
+    return undefined;
   }
 }
