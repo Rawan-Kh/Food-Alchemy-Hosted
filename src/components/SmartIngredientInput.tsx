@@ -158,7 +158,7 @@ export const SmartIngredientInput: React.FC<SmartIngredientInputProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex flex-col md:flex-row gap-4 items-center ">
+            <div className="flex flex-col md:flex-row gap-4 items-start ">
               <div className="flex-1">
                 <Input placeholder="Type ingredients (e.g., '2 cups flour, 3 tomatoes, 1 kg chicken')" value={textInput} onChange={e => setTextInput(e.target.value)} onKeyPress={e => e.key === 'Enter' && handleTextInputSubmit()} className="min-w-72 " />
               </div>
