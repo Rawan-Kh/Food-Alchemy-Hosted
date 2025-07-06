@@ -213,7 +213,7 @@ const Index = () => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <ChefHat className="w-8 h-8 text-orange-600" />
-              <h1 className="text-gray-800 text-2xl font-bold">Recipe Assistant</h1>
+              <h1 className="text-gray-800 font-bold text-lg">Recipe Assistant</h1>
             </div>
             <UserMenu />
           </div>
