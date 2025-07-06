@@ -1,10 +1,12 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Users, Edit, Trash2, Eye, Image } from 'lucide-react';
+import { Clock, Users, Edit, Trash2, Eye, Image, ChefHat } from 'lucide-react';
 import { Recipe } from './RecipeManager';
 import { Ingredient } from './IngredientManager';
+
 interface RecipeCardProps {
   recipe: Recipe;
   ingredients: Ingredient[];
@@ -14,6 +16,7 @@ interface RecipeCardProps {
   onUse: (recipe: Recipe) => void;
   onViewDetails: (recipe: Recipe) => void;
 }
+
 export const RecipeCard: React.FC<RecipeCardProps> = ({
   recipe,
   ingredients,
@@ -23,12 +26,42 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
   onUse,
   onViewDetails
 }) => {
-  return <Card className="flex flex-col">
-      {recipe.image && <div className="w-full h-48 overflow-hidden rounded-t-lg">
-          <img src={recipe.image} alt={recipe.name} className="w-full h-full object-cover" />
-        </div>}
+  const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoading(false);
+  };
+
+  const handleImageLoad = () => {
+    setImageLoading(false);
+  };
+
+  return (
+    <Card className="flex flex-col">
+      {recipe.image && !imageError ? (
+        <div className="w-full h-48 overflow-hidden rounded-t-lg relative">
+          {imageLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+              <ChefHat className="w-12 h-12 text-gray-400" />
+            </div>
+          )}
+          <img
+            src={recipe.image}
+            alt={recipe.name}
+            className="w-full h-full object-cover"
+            onError={handleImageError}
+            onLoad={handleImageLoad}
+          />
+        </div>
+      ) : (
+        <div className="w-full h-48 bg-gray-100 rounded-t-lg flex items-center justify-center">
+          <ChefHat className="w-16 h-16 text-gray-400" />
+        </div>
+      )}
       
-      <CardHeader className={recipe.image ? 'pb-2' : ''}>
+      <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg">{recipe.name}</CardTitle>
           <div className="flex items-center gap-2">
@@ -76,5 +109,6 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
           </Button>
         </div>
       </CardContent>
-    </Card>;
+    </Card>
+  );
 };

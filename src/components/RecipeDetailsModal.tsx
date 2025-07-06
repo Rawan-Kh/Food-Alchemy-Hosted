@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Clock, Users, Edit, Trash2 } from 'lucide-react';
+import { Clock, Users, Edit, Trash2, ChefHat } from 'lucide-react';
 import { Recipe } from './RecipeManager';
 import { Ingredient } from './CategorizedIngredientManager';
 import { RecipeIngredientsList } from './RecipeIngredientsList';
@@ -35,7 +35,19 @@ export const RecipeDetailsModal: React.FC<RecipeDetailsModalProps> = ({
   onDelete,
   onUse
 }) => {
+  const [imageError, setImageError] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
+
   if (!recipe) return null;
+
+  const handleImageError = () => {
+    setImageError(true);
+    setImageLoading(false);
+  };
+
+  const handleImageLoad = () => {
+    setImageLoading(false);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -83,15 +95,26 @@ export const RecipeDetailsModal: React.FC<RecipeDetailsModalProps> = ({
         </DialogHeader>
 
         <div className="space-y-6">
-          {recipe.image && (
-            <div className="w-full h-64 overflow-hidden rounded-lg">
+          {recipe.image && !imageError ? (
+            <div className="w-full h-64 overflow-hidden rounded-lg relative">
+              {imageLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                  <ChefHat className="w-16 h-16 text-gray-400" />
+                </div>
+              )}
               <img
                 src={recipe.image}
                 alt={recipe.name}
                 className="w-full h-full object-cover"
+                onError={handleImageError}
+                onLoad={handleImageLoad}
               />
             </div>
-          )}
+          ) : recipe.image ? (
+            <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+              <ChefHat className="w-20 h-20 text-gray-400" />
+            </div>
+          ) : null}
 
           <div>
             <h3 className="font-semibold mb-2">Description</h3>
