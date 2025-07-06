@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,6 @@ import { Badge } from '@/components/ui/badge';
 import { Clock, Users, Edit, Trash2, Eye, Image, ChefHat } from 'lucide-react';
 import { Recipe } from './RecipeManager';
 import { Ingredient } from './IngredientManager';
-
 interface RecipeCardProps {
   recipe: Recipe;
   ingredients: Ingredient[];
@@ -16,7 +14,6 @@ interface RecipeCardProps {
   onUse: (recipe: Recipe) => void;
   onViewDetails: (recipe: Recipe) => void;
 }
-
 export const RecipeCard: React.FC<RecipeCardProps> = ({
   recipe,
   ingredients,
@@ -28,38 +25,22 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
 }) => {
   const [imageError, setImageError] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
-
   const handleImageError = () => {
     setImageError(true);
     setImageLoading(false);
   };
-
   const handleImageLoad = () => {
     setImageLoading(false);
   };
-
-  return (
-    <Card className="flex flex-col">
-      {recipe.image && !imageError ? (
-        <div className="w-full h-48 overflow-hidden rounded-t-lg relative">
-          {imageLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+  return <Card className="flex flex-col">
+      {recipe.image && !imageError ? <div className="w-full h-48 overflow-hidden rounded-t-lg relative">
+          {imageLoading && <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
               <ChefHat className="w-12 h-12 text-gray-400" />
-            </div>
-          )}
-          <img
-            src={recipe.image}
-            alt={recipe.name}
-            className="w-full h-full object-cover"
-            onError={handleImageError}
-            onLoad={handleImageLoad}
-          />
-        </div>
-      ) : (
-        <div className="w-full h-48 bg-gray-100 rounded-t-lg flex items-center justify-center">
+            </div>}
+          <img src={recipe.image} alt={recipe.name} className="w-full h-full object-cover" onError={handleImageError} onLoad={handleImageLoad} />
+        </div> : <div className="w-full h-48 bg-gray-100 rounded-t-lg flex items-center justify-center">
           <ChefHat className="w-16 h-16 text-gray-400" />
-        </div>
-      )}
+        </div>}
       
       <CardHeader className="pb-2">
         <div className="flex justify-between items-start">
@@ -70,7 +51,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
             </Badge>
           </div>
         </div>
-        <div className="flex gap-2 mt-2 ">
+        <div className="flex gap-2 mt-2">
           <Button variant="ghost" size="sm" onClick={() => onViewDetails(recipe)} className="text-gray-600 hover:text-gray-800">
             <Eye className="w-4 h-4" />
           </Button>
@@ -83,7 +64,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
         </div>
       </CardHeader>
       <CardContent className="flex-1 space-y-4">
-        <div className="flex items-center gap-4 text-sm text-gray-600">
+        <div className="flex items-center gap-4 text-sm text-gray-600 ">
           <div className="flex items-center gap-1">
             <Clock className="w-4 h-4" />
             {recipe.cookingTime}m
@@ -94,7 +75,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
           </div>
         </div>
 
-        <p className="text-sm text-gray-600 line-clamp-3">{recipe.description}</p>
+        <p className="text-sm text-gray-600 line-clamp-2">{recipe.description}</p>
 
         <div className="flex-1">
           <p className="text-xs text-gray-500">Source: {recipe.source}</p>
@@ -109,6 +90,5 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
           </Button>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
