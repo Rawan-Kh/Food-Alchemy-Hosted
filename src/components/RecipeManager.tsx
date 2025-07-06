@@ -10,12 +10,15 @@ import { RecipeFilters } from './RecipeFilters';
 import { RecipeEditModal } from './RecipeEditModal';
 import { RecipeDetailsModal } from './RecipeDetailsModal';
 import { useRecipeManager } from '@/hooks/useRecipeManager';
-
 export interface Recipe {
   id: string;
   name: string;
   description: string;
-  ingredients: { name: string; quantity: number; unit: string }[];
+  ingredients: {
+    name: string;
+    quantity: number;
+    unit: string;
+  }[];
   instructions: string[];
   cookingTime: number;
   servings: number;
@@ -23,7 +26,6 @@ export interface Recipe {
   dateAdded: string;
   image?: string;
 }
-
 interface RecipeManagerProps {
   recipes: Recipe[];
   ingredients: Ingredient[];
@@ -34,7 +36,6 @@ interface RecipeManagerProps {
   matchFilter: number;
   onMatchFilterChange: (filter: number) => void;
 }
-
 export const RecipeManager: React.FC<RecipeManagerProps> = ({
   recipes,
   ingredients,
@@ -47,7 +48,6 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
 }) => {
   const [selectedRecipeForDetails, setSelectedRecipeForDetails] = useState<Recipe | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
-
   const {
     showAddForm,
     setShowAddForm,
@@ -65,29 +65,24 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
     handleDeleteRecipe,
     handleCancelEdit
   } = useRecipeManager(recipes, ingredients, onAddRecipe, onUpdateRecipe, onDeleteRecipe, onUseRecipe);
-
   const filteredRecipes = getFilteredRecipes(matchFilter);
-
   const handleViewDetails = (recipe: Recipe) => {
     setSelectedRecipeForDetails(recipe);
     setShowDetailsModal(true);
   };
-
   const handleCloseDetailsModal = () => {
     setSelectedRecipeForDetails(null);
     setShowDetailsModal(false);
   };
-
-  return (
-    <div className="space-y-6">
+  return <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center justify-between">
+          <CardTitle className="flex items-center justify-between flex-wrap ">
             <div className="flex items-center gap-2">
               <ChefHat className="w-5 h-5" />
               Your Recipes ({recipes.length})
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mt-7">
               <Button onClick={() => setShowAddForm(true)} variant="outline">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Recipe
@@ -98,75 +93,34 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <RecipeFilters
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              matchFilter={matchFilter}
-              onMatchFilterChange={onMatchFilterChange}
-            />
+            <RecipeFilters searchTerm={searchTerm} onSearchChange={setSearchTerm} matchFilter={matchFilter} onMatchFilterChange={onMatchFilterChange} />
 
-            {showAddForm && (
-              <RecipeForm
-                formData={formData}
-                isEditing={false}
-                onFormDataChange={setFormData}
-                onSubmit={handleAddRecipe}
-                onCancel={() => setShowAddForm(false)}
-              />
-            )}
+            {showAddForm && <RecipeForm formData={formData} isEditing={false} onFormDataChange={setFormData} onSubmit={handleAddRecipe} onCancel={() => setShowAddForm(false)} />}
           </div>
         </CardContent>
       </Card>
 
-      <RecipeEditModal
-        isOpen={showEditModal}
-        onClose={handleCancelEdit}
-        recipe={editingRecipe}
-        formData={formData}
-        onFormDataChange={setFormData}
-        onSubmit={handleUpdateRecipe}
-      />
+      <RecipeEditModal isOpen={showEditModal} onClose={handleCancelEdit} recipe={editingRecipe} formData={formData} onFormDataChange={setFormData} onSubmit={handleUpdateRecipe} />
 
-      <RecipeDetailsModal
-        recipe={selectedRecipeForDetails}
-        isOpen={showDetailsModal}
-        onClose={handleCloseDetailsModal}
-        ingredients={ingredients}
-        matchPercentage={selectedRecipeForDetails ? calculateMatchPercentage(selectedRecipeForDetails) : 0}
-        onEdit={(recipe) => {
-          handleCloseDetailsModal();
-          handleEditRecipe(recipe);
-        }}
-        onDelete={(recipe) => {
-          handleCloseDetailsModal();
-          handleDeleteRecipe(recipe);
-        }}
-        onUse={(recipe) => {
-          handleCloseDetailsModal();
-          onUseRecipe(recipe);
-        }}
-      />
+      <RecipeDetailsModal recipe={selectedRecipeForDetails} isOpen={showDetailsModal} onClose={handleCloseDetailsModal} ingredients={ingredients} matchPercentage={selectedRecipeForDetails ? calculateMatchPercentage(selectedRecipeForDetails) : 0} onEdit={recipe => {
+      handleCloseDetailsModal();
+      handleEditRecipe(recipe);
+    }} onDelete={recipe => {
+      handleCloseDetailsModal();
+      handleDeleteRecipe(recipe);
+    }} onUse={recipe => {
+      handleCloseDetailsModal();
+      onUseRecipe(recipe);
+    }} />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredRecipes.map((recipe) => {
-          const matchPercentage = calculateMatchPercentage(recipe);
-          return (
-            <RecipeCard
-              key={recipe.id}
-              recipe={recipe}
-              ingredients={ingredients}
-              matchPercentage={matchPercentage}
-              onEdit={handleEditRecipe}
-              onDelete={handleDeleteRecipe}
-              onUse={onUseRecipe}
-              onViewDetails={handleViewDetails}
-            />
-          );
-        })}
+        {filteredRecipes.map(recipe => {
+        const matchPercentage = calculateMatchPercentage(recipe);
+        return <RecipeCard key={recipe.id} recipe={recipe} ingredients={ingredients} matchPercentage={matchPercentage} onEdit={handleEditRecipe} onDelete={handleDeleteRecipe} onUse={onUseRecipe} onViewDetails={handleViewDetails} />;
+      })}
       </div>
 
-      {filteredRecipes.length === 0 && (
-        <Card>
+      {filteredRecipes.length === 0 && <Card>
           <CardContent className="text-center py-8">
             <ChefHat className="w-12 h-12 mx-auto text-gray-400 mb-4" />
             <p className="text-gray-500">No recipes match your current filters.</p>
@@ -174,8 +128,6 @@ export const RecipeManager: React.FC<RecipeManagerProps> = ({
               Try lowering the match percentage or adding more ingredients.
             </p>
           </CardContent>
-        </Card>
-      )}
-    </div>
-  );
+        </Card>}
+    </div>;
 };
