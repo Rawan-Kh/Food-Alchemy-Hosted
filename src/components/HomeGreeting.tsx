@@ -8,7 +8,7 @@ export const HomeGreeting: React.FC = () => {
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   };
-  return <Card className="bg-gradient-to-r from-orange-500 to-green-500 text-white">
+  return <Card className="bg-gradient-to-r from-orange-500 to-green-500 text-white rounded-2xl">
       <CardContent className="pt-6 bg-orange-500 rounded-3xl">
         <div className="flex items-center gap-3">
           <Sparkles className="w-8 h-8" />
