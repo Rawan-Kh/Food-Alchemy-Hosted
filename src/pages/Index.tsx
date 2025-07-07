@@ -5,22 +5,31 @@ import { RecipeManager, Recipe } from '@/components/RecipeManager';
 import { MealPlanner } from '@/components/MealPlanner';
 import { UserMenu } from '@/components/UserMenu';
 import { BottomNavigation } from '@/components/BottomNavigation';
+import { Home } from '@/components/Home';
+import { ShoppingListManager } from '@/components/ShoppingListManager';
+import { RecipeDetailsModal } from '@/components/RecipeDetailsModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChefHat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useMealPlanner } from '@/hooks/useMealPlanner';
 
 // Generate unique ID with timestamp and random component
 const generateUniqueId = () => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
+
 const Index = () => {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [matchFilter, setMatchFilter] = useState(50);
-  const [activeTab, setActiveTab] = useState('ingredients');
-  const {
-    toast
-  } = useToast();
+  const [activeTab, setActiveTab] = useState('home');
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const [showRecipeModal, setShowRecipeModal] = useState(false);
+  const { toast } = useToast();
+
+  // Meal planner hook
+  const mealPlanner = useMealPlanner(recipes, ingredients, setIngredients);
+
   const handleAddIngredients = (newIngredients: Array<{
     name: string;
     quantity: number;
@@ -36,6 +45,7 @@ const Index = () => {
     console.log('Adding multiple ingredients:', ingredientsWithIds);
     setIngredients(prev => [...prev, ...ingredientsWithIds]);
   };
+
   const handleAddIngredient = (newIngredient: Omit<Ingredient, 'id' | 'dateAdded'>) => {
     const ingredient: Ingredient = {
       ...newIngredient,
@@ -45,10 +55,12 @@ const Index = () => {
     console.log('Adding ingredient with ID:', ingredient.id);
     setIngredients(prev => [...prev, ingredient]);
   };
+
   const handleRemoveIngredient = (id: string) => {
     console.log('Removing ingredient with ID:', id);
     setIngredients(prev => prev.filter(ingredient => ingredient.id !== id));
   };
+
   const handleUpdateQuantity = (id: string, newQuantity: number) => {
     console.log('Updating quantity for ingredient ID:', id, 'to:', newQuantity);
     setIngredients(prev => prev.map(ingredient => ingredient.id === id ? {
@@ -56,6 +68,7 @@ const Index = () => {
       quantity: newQuantity
     } : ingredient));
   };
+
   const handleAddRecipe = (newRecipe: Omit<Recipe, 'id' | 'dateAdded'>) => {
     const recipe: Recipe = {
       ...newRecipe,
@@ -64,15 +77,18 @@ const Index = () => {
     };
     setRecipes(prev => [...prev, recipe]);
   };
+
   const handleUpdateRecipe = (id: string, updatedRecipe: Omit<Recipe, 'id' | 'dateAdded'>) => {
     setRecipes(prev => prev.map(recipe => recipe.id === id ? {
       ...recipe,
       ...updatedRecipe
     } : recipe));
   };
+
   const handleDeleteRecipe = (id: string) => {
     setRecipes(prev => prev.filter(recipe => recipe.id !== id));
   };
+
   const handleUseRecipe = (recipe: Recipe) => {
     console.log('Using recipe:', recipe.name);
 
@@ -107,11 +123,32 @@ const Index = () => {
       });
     }
   };
+
   const handleUpdateIngredients = (newIngredients: Ingredient[]) => {
     setIngredients(newIngredients);
   };
 
-  // Load data from localStorage on component mount
+  const handleViewRecipe = (recipe: Recipe) => {
+    setSelectedRecipe(recipe);
+    setShowRecipeModal(true);
+  };
+
+  const calculateMatchPercentage = (recipe: Recipe): number => {
+    const availableIngredientNames = ingredients.map(i => i.name.toLowerCase());
+    const requiredIngredients = recipe.ingredients.length;
+    
+    if (requiredIngredients === 0) return 100;
+    
+    const matchedIngredients = recipe.ingredients.filter(recipeIngredient =>
+      availableIngredientNames.some(availableIngredient =>
+        availableIngredient.includes(recipeIngredient.name.toLowerCase()) ||
+        recipeIngredient.name.toLowerCase().includes(availableIngredient)
+      )
+    ).length;
+
+    return Math.round((matchedIngredients / requiredIngredients) * 100);
+  };
+
   useEffect(() => {
     const savedIngredients = localStorage.getItem('recipe-app-ingredients');
     const savedRecipes = localStorage.getItem('recipe-app-recipes');
@@ -185,29 +222,77 @@ const Index = () => {
     }
   }, []);
 
-  // Save to localStorage whenever data changes
   useEffect(() => {
     localStorage.setItem('recipe-app-ingredients', JSON.stringify(ingredients));
   }, [ingredients]);
+
   useEffect(() => {
     localStorage.setItem('recipe-app-recipes', JSON.stringify(recipes));
   }, [recipes]);
+
   const renderTabContent = () => {
     switch (activeTab) {
+      case 'home':
+        return (
+          <Home
+            recipes={recipes}
+            ingredients={ingredients}
+            currentWeekPlan={mealPlanner.currentWeekPlan}
+            onViewRecipe={handleViewRecipe}
+            onUseRecipe={handleUseRecipe}
+            onNavigateToRecipes={() => setActiveTab('recipes')}
+            onNavigateToMealPlanner={() => setActiveTab('meal-planner')}
+          />
+        );
       case 'ingredients':
-        return <div className="space-y-6">
+        return (
+          <div className="space-y-6">
             <SmartIngredientInput onAddIngredients={handleAddIngredients} currentIngredients={ingredients} />
-            <CategorizedIngredientManager ingredients={ingredients} onAddIngredient={handleAddIngredient} onRemoveIngredient={handleRemoveIngredient} onUpdateQuantity={handleUpdateQuantity} />
-          </div>;
+            <CategorizedIngredientManager 
+              ingredients={ingredients} 
+              onAddIngredient={handleAddIngredient} 
+              onRemoveIngredient={handleRemoveIngredient} 
+              onUpdateQuantity={handleUpdateQuantity} 
+            />
+          </div>
+        );
       case 'recipes':
-        return <RecipeManager recipes={recipes} ingredients={ingredients} onAddRecipe={handleAddRecipe} onUpdateRecipe={handleUpdateRecipe} onDeleteRecipe={handleDeleteRecipe} onUseRecipe={handleUseRecipe} matchFilter={matchFilter} onMatchFilterChange={setMatchFilter} />;
+        return (
+          <RecipeManager 
+            recipes={recipes} 
+            ingredients={ingredients} 
+            onAddRecipe={handleAddRecipe} 
+            onUpdateRecipe={handleUpdateRecipe} 
+            onDeleteRecipe={handleDeleteRecipe} 
+            onUseRecipe={handleUseRecipe} 
+            matchFilter={matchFilter} 
+            onMatchFilterChange={setMatchFilter} 
+          />
+        );
       case 'meal-planner':
-        return <MealPlanner recipes={recipes} ingredients={ingredients} onUpdateIngredients={handleUpdateIngredients} />;
+        return (
+          <MealPlanner 
+            recipes={recipes} 
+            ingredients={ingredients} 
+            onUpdateIngredients={handleUpdateIngredients} 
+          />
+        );
+      case 'shopping':
+        return (
+          <ShoppingListManager
+            shoppingList={mealPlanner.currentShoppingList}
+            onToggleItem={mealPlanner.toggleShoppingListItem}
+            onAddToPantry={mealPlanner.addShoppingItemToPantry}
+            onCompleteShoppingList={mealPlanner.completeShoppingList}
+          />
+        );
       default:
         return null;
     }
   };
-  return <div className="min-h-screen bg-gradient-to-br from-orange-50 to-green-50 p-4 pb-24">
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-green-50 p-4 pb-24">
       <div className="max-w-7xl mx-auto">
         <header className="text-center mb-8">
           <div className="flex items-center justify-between mb-4">
@@ -217,15 +302,43 @@ const Index = () => {
             </div>
             <UserMenu />
           </div>
-          
         </header>
 
         <div className="mt-8">
           {renderTabContent()}
         </div>
 
-        <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} ingredientsCount={ingredients.length} recipesCount={recipes.length} />
+        <BottomNavigation 
+          activeTab={activeTab} 
+          onTabChange={setActiveTab} 
+          ingredientsCount={ingredients.length} 
+          recipesCount={recipes.length}
+          shoppingList={mealPlanner.currentShoppingList}
+        />
+
+        <RecipeDetailsModal
+          recipe={selectedRecipe}
+          isOpen={showRecipeModal}
+          onClose={() => {
+            setShowRecipeModal(false);
+            setSelectedRecipe(null);
+          }}
+          ingredients={ingredients}
+          matchPercentage={selectedRecipe ? calculateMatchPercentage(selectedRecipe) : 0}
+          onEdit={(recipe) => {
+            setShowRecipeModal(false);
+            setActiveTab('recipes');
+          }}
+          onDelete={(recipe) => {
+            handleDeleteRecipe(recipe.id);
+            setShowRecipeModal(false);
+            setSelectedRecipe(null);
+          }}
+          onUse={handleUseRecipe}
+        />
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
