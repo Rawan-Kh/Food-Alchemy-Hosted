@@ -1,8 +1,6 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Sparkles } from 'lucide-react';
-
 export const HomeGreeting: React.FC = () => {
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -10,10 +8,8 @@ export const HomeGreeting: React.FC = () => {
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   };
-
-  return (
-    <Card className="bg-gradient-to-r from-orange-500 to-green-500 text-white">
-      <CardContent className="pt-6">
+  return <Card className="bg-gradient-to-r from-orange-500 to-green-500 text-white">
+      <CardContent className="pt-6 bg-orange-500">
         <div className="flex items-center gap-3">
           <Sparkles className="w-8 h-8" />
           <div>
@@ -22,6 +18,5 @@ export const HomeGreeting: React.FC = () => {
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
