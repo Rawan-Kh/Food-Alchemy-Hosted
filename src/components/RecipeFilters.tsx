@@ -23,7 +23,7 @@ export const RecipeFilters: React.FC<RecipeFiltersProps> = ({
         <div className="relative">
           <Search className="absolute left-3 top-3 w-4 h-4 text-gray-500" />
           <Input
-            placeholder="Search recipes..."
+            placeholder="Search by recipe name, ingredients, or meal type (e.g., breakfast, lunch, dinner)..."
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="pl-10"

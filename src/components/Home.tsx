@@ -40,13 +40,30 @@ export const Home: React.FC<HomeProps> = ({
   const handleSearch = (term: string) => {
     setSearchTerm(term);
     if (term.trim()) {
-      const results = recipes.filter(recipe =>
-        recipe.name.toLowerCase().includes(term.toLowerCase()) ||
-        recipe.description.toLowerCase().includes(term.toLowerCase()) ||
-        recipe.ingredients.some(ingredient => 
-          ingredient.name.toLowerCase().includes(term.toLowerCase())
-        )
-      );
+      const results = recipes.filter(recipe => {
+        const searchLower = term.toLowerCase();
+        
+        // Search by recipe name
+        const nameMatch = recipe.name.toLowerCase().includes(searchLower);
+        
+        // Search by description for meal type hints
+        const descriptionMatch = recipe.description.toLowerCase().includes(searchLower);
+        
+        // Search by ingredients
+        const ingredientMatch = recipe.ingredients.some(ingredient => 
+          ingredient.name.toLowerCase().includes(searchLower)
+        );
+        
+        // Search by meal type keywords
+        const mealTypeMatch = 
+          (searchLower.includes('breakfast') && (recipe.name.toLowerCase().includes('breakfast') || recipe.description.toLowerCase().includes('breakfast'))) ||
+          (searchLower.includes('lunch') && (recipe.name.toLowerCase().includes('lunch') || recipe.description.toLowerCase().includes('lunch'))) ||
+          (searchLower.includes('dinner') && (recipe.name.toLowerCase().includes('dinner') || recipe.description.toLowerCase().includes('dinner'))) ||
+          (searchLower.includes('snack') && (recipe.name.toLowerCase().includes('snack') || recipe.description.toLowerCase().includes('snack'))) ||
+          (searchLower.includes('dessert') && (recipe.name.toLowerCase().includes('dessert') || recipe.description.toLowerCase().includes('dessert')));
+        
+        return nameMatch || descriptionMatch || ingredientMatch || mealTypeMatch;
+      });
       setSearchResults(results);
       setShowSearchResults(true);
     } else {
@@ -82,13 +99,13 @@ export const Home: React.FC<HomeProps> = ({
         onNavigateToMealPlanner={onNavigateToMealPlanner}
       />
 
-      {/* Search Bar */}
+      {/* Enhanced Search Bar */}
       <Card>
         <CardContent className="pt-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <Input
-              placeholder="Search recipes by name, ingredient, or cuisine..."
+              placeholder="Search by recipe name, ingredients, or meal type (breakfast, lunch, dinner)..."
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               className="pl-10"

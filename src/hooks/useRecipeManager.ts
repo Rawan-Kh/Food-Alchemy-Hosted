@@ -60,8 +60,29 @@ export const useRecipeManager = (
     return recipes.filter(recipe => {
       const matchPercentage = calculateMatchPercentage(recipe);
       const matchesFilter = matchPercentage >= matchFilter;
-      const matchesSearch = recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      if (!searchTerm.trim()) {
+        return matchesFilter;
+      }
+      
+      const searchLower = searchTerm.toLowerCase();
+      
+      // Enhanced search functionality
+      const nameMatch = recipe.name.toLowerCase().includes(searchLower);
+      const descriptionMatch = recipe.description.toLowerCase().includes(searchLower);
+      const ingredientMatch = recipe.ingredients.some(ingredient => 
+        ingredient.name.toLowerCase().includes(searchLower)
+      );
+      
+      // Search by meal type keywords
+      const mealTypeMatch = 
+        (searchLower.includes('breakfast') && (recipe.name.toLowerCase().includes('breakfast') || recipe.description.toLowerCase().includes('breakfast'))) ||
+        (searchLower.includes('lunch') && (recipe.name.toLowerCase().includes('lunch') || recipe.description.toLowerCase().includes('lunch'))) ||
+        (searchLower.includes('dinner') && (recipe.name.toLowerCase().includes('dinner') || recipe.description.toLowerCase().includes('dinner'))) ||
+        (searchLower.includes('snack') && (recipe.name.toLowerCase().includes('snack') || recipe.description.toLowerCase().includes('snack'))) ||
+        (searchLower.includes('dessert') && (recipe.name.toLowerCase().includes('dessert') || recipe.description.toLowerCase().includes('dessert')));
+      
+      const matchesSearch = nameMatch || descriptionMatch || ingredientMatch || mealTypeMatch;
       
       return matchesFilter && matchesSearch;
     }).sort((a, b) => calculateMatchPercentage(b) - calculateMatchPercentage(a));
