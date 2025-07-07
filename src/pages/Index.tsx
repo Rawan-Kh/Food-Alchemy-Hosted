@@ -8,6 +8,7 @@ import { BottomNavigation } from '@/components/BottomNavigation';
 import { Home } from '@/components/Home';
 import { ShoppingListManager } from '@/components/ShoppingListManager';
 import { RecipeDetailsModal } from '@/components/RecipeDetailsModal';
+import { GuidedChecklist } from '@/components/GuidedChecklist';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChefHat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -274,7 +275,8 @@ const Index = () => {
           <MealPlanner 
             recipes={recipes} 
             ingredients={ingredients} 
-            onUpdateIngredients={handleUpdateIngredients} 
+            onUpdateIngredients={handleUpdateIngredients}
+            onNavigateToShopping={() => setActiveTab('shopping')}
           />
         );
       case 'shopping':
@@ -314,6 +316,14 @@ const Index = () => {
           ingredientsCount={ingredients.length} 
           recipesCount={recipes.length}
           shoppingList={mealPlanner.currentShoppingList}
+        />
+
+        <GuidedChecklist
+          recipes={recipes}
+          ingredients={ingredients}
+          currentWeekPlan={mealPlanner.currentWeekPlan}
+          shoppingList={mealPlanner.currentShoppingList}
+          onNavigateToTab={setActiveTab}
         />
 
         <RecipeDetailsModal

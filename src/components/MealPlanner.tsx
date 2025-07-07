@@ -8,18 +8,22 @@ import { MealPlanHistoryDropdown } from './MealPlanHistoryDropdown';
 import { Recipe } from './RecipeManager';
 import { Ingredient } from './CategorizedIngredientManager';
 import { useMealPlanner } from '@/hooks/useMealPlanner';
+import { useToast } from '@/hooks/use-toast';
 
 interface MealPlannerProps {
   recipes: Recipe[];
   ingredients: Ingredient[];
   onUpdateIngredients: (ingredients: Ingredient[]) => void;
+  onNavigateToShopping?: () => void;
 }
 
 export const MealPlanner: React.FC<MealPlannerProps> = ({
   recipes,
   ingredients,
-  onUpdateIngredients
+  onUpdateIngredients,
+  onNavigateToShopping
 }) => {
+  const { toast } = useToast();
   const {
     currentWeekPlan,
     mealPlanHistory,
@@ -33,6 +37,18 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
     getRecipeById,
     deleteFromHistory
   } = useMealPlanner(recipes, ingredients, onUpdateIngredients);
+
+  const handleGenerateShoppingList = () => {
+    generateShoppingListForPlan();
+    toast({
+      title: "Shopping list generated!",
+      description: "Check the Shopping tab to view your list.",
+      action: onNavigateToShopping ? {
+        label: "View Shopping List",
+        onClick: onNavigateToShopping
+      } : undefined
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -70,10 +86,10 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
                 <div className="flex gap-2 flex-wrap mt-6">
                   <Button 
                     variant="outline" 
-                    onClick={generateShoppingListForPlan} 
+                    onClick={handleGenerateShoppingList} 
                     disabled={!!currentShoppingList}
                   >
-                    Generate Shopping List
+                    {currentShoppingList ? 'Shopping List Generated' : 'Generate Shopping List'}
                   </Button>
                   <Button 
                     variant="outline" 
