@@ -130,13 +130,14 @@ export const RecipeDetailsModal: React.FC<RecipeDetailsModalProps> = ({
 
           <div className="flex items-center justify-between pt-4 border-t">
             <p className="text-sm text-gray-500">Source: {recipe.source}</p>
-            <Button 
-              onClick={() => onUse(recipe)} 
-              disabled={matchPercentage < 100}
-              className="min-w-[120px]"
-            >
-              {matchPercentage === 100 ? 'Cook This Recipe' : 'Missing Ingredients'}
-            </Button>
+            {matchPercentage === 100 && (
+              <Button 
+                onClick={() => onUse(recipe)} 
+                className="min-w-[120px]"
+              >
+                Consume
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
