@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +8,7 @@ import { Recipe } from './RecipeManager';
 import { Ingredient } from './CategorizedIngredientManager';
 import { useMealPlanner } from '@/hooks/useMealPlanner';
 import { useToast } from '@/hooks/use-toast';
+import { ToastAction } from '@/components/ui/toast';
 
 interface MealPlannerProps {
   recipes: Recipe[];
@@ -43,10 +43,11 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
     toast({
       title: "Shopping list generated!",
       description: "Check the Shopping tab to view your list.",
-      action: onNavigateToShopping ? {
-        label: "View Shopping List",
-        onClick: onNavigateToShopping
-      } : undefined
+      action: onNavigateToShopping ? (
+        <ToastAction altText="View Shopping List" onClick={onNavigateToShopping}>
+          View Shopping List
+        </ToastAction>
+      ) : undefined
     });
   };
 
