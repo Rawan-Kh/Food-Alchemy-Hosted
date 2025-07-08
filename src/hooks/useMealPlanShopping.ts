@@ -79,20 +79,29 @@ export const useMealPlanShopping = (
   const { toast } = useToast();
 
   const generateShoppingListForPlan = (weekPlan: WeeklyMealPlan, recipes: Recipe[]) => {
-    if (!weekPlan) return;
+    if (!weekPlan) {
+      console.log('No week plan provided for shopping list generation');
+      return;
+    }
 
-    console.log('Generating shopping list for week plan:', weekPlan.id);
+    console.log('=== SHOPPING LIST GENERATION START ===');
+    console.log('Week plan ID:', weekPlan.id);
     console.log('Available ingredients:', ingredients.length);
     console.log('Available recipes:', recipes.length);
 
+    // Generate new shopping list
     const shoppingList = generateShoppingList(weekPlan, recipes, ingredients);
     
-    console.log('Generated shopping list:', shoppingList);
-    console.log('Shopping list items:', shoppingList.items.length);
+    console.log('Generated shopping list with items:', shoppingList.items.length);
+    shoppingList.items.forEach(item => {
+      console.log(`- ${item.ingredientName}: missing ${item.missingQuantity} ${item.unit} (from recipes: ${item.recipeNames.join(', ')})`);
+    });
+    console.log('=== SHOPPING LIST GENERATION END ===');
 
+    // Always set the new shopping list, replacing any existing one
     setCurrentShoppingList(shoppingList);
 
-    // Don't show toast here - let the caller handle it for better timing
+    return shoppingList;
   };
 
   const toggleShoppingListItem = (itemId: string) => {

@@ -40,11 +40,14 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
   } = useMealPlanner(recipes, ingredients, onUpdateIngredients);
 
   const handleGenerateShoppingList = () => {
+    console.log('Generating shopping list...');
     generateShoppingListForPlan();
     
     // Add small delay to ensure shopping list is generated before showing toast
     setTimeout(() => {
       const itemCount = currentShoppingList?.items?.length || 0;
+      console.log('Shopping list generated with', itemCount, 'items');
+      
       toast({
         title: "Shopping list generated!",
         description: itemCount > 0 
@@ -60,11 +63,14 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
   };
 
   const handleRegenerateShoppingList = () => {
+    console.log('Regenerating shopping list...');
     generateShoppingListForPlan();
     
     // Add small delay to ensure shopping list is updated before showing toast
     setTimeout(() => {
       const itemCount = currentShoppingList?.items?.length || 0;
+      console.log('Shopping list regenerated with', itemCount, 'items');
+      
       toast({
         title: "Shopping list updated!",
         description: itemCount > 0 
@@ -113,15 +119,15 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
                   </p>
                 </div>
                 <div className="flex gap-2 flex-wrap mt-6">
-                  {!currentShoppingList ? (
-                    <Button 
-                      onClick={handleGenerateShoppingList}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <ShoppingCart className="w-4 h-4 mr-2" />
-                      Generate Shopping List
-                    </Button>
-                  ) : (
+                  <Button 
+                    onClick={handleGenerateShoppingList}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    <ShoppingCart className="w-4 h-4 mr-2" />
+                    {currentShoppingList ? 'Generate New List' : 'Generate Shopping List'}
+                  </Button>
+                  
+                  {currentShoppingList && (
                     <div className="flex gap-2">
                       <Button 
                         variant="outline"
@@ -141,6 +147,7 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
                       </Button>
                     </div>
                   )}
+                  
                   <Button 
                     variant="outline" 
                     onClick={cancelMealPlan} 
