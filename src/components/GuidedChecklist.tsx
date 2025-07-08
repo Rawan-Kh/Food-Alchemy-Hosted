@@ -35,7 +35,7 @@ export const GuidedChecklist: React.FC<GuidedChecklistProps> = ({
   onNavigateToTab
 }) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   const checklistItems: ChecklistItem[] = [
     {
@@ -123,7 +123,7 @@ export const GuidedChecklist: React.FC<GuidedChecklistProps> = ({
 
   return (
     <Card className="fixed bottom-20 right-4 w-80 z-50 shadow-lg border-orange-200">
-      <Collapsible open={!isCollapsed} onOpenChange={setIsCollapsed}>
+      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -137,7 +137,7 @@ export const GuidedChecklist: React.FC<GuidedChecklistProps> = ({
                   size="sm"
                   className="h-6 w-6 p-0"
                 >
-                  <ChevronDown className={`w-3 h-3 transition-transform ${isCollapsed ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`w-3 h-3 transition-transform ${!isOpen ? 'rotate-180' : ''}`} />
                 </Button>
               </CollapsibleTrigger>
               <Button 
