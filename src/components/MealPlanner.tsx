@@ -41,28 +41,42 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
 
   const handleGenerateShoppingList = () => {
     generateShoppingListForPlan();
-    toast({
-      title: "Shopping list generated!",
-      description: "Check the Shopping tab to view your list.",
-      action: onNavigateToShopping ? (
-        <ToastAction altText="View Shopping List" onClick={onNavigateToShopping}>
-          View Shopping List
-        </ToastAction>
-      ) : undefined
-    });
+    
+    // Add small delay to ensure shopping list is generated before showing toast
+    setTimeout(() => {
+      const itemCount = currentShoppingList?.items?.length || 0;
+      toast({
+        title: "Shopping list generated!",
+        description: itemCount > 0 
+          ? `Found ${itemCount} missing ingredients. Check the Shopping tab to view your list.`
+          : "All ingredients are available in your pantry!",
+        action: onNavigateToShopping && itemCount > 0 ? (
+          <ToastAction altText="View Shopping List" onClick={onNavigateToShopping}>
+            View Shopping List
+          </ToastAction>
+        ) : undefined
+      });
+    }, 100);
   };
 
   const handleRegenerateShoppingList = () => {
     generateShoppingListForPlan();
-    toast({
-      title: "Shopping list updated!",
-      description: "Your shopping list has been regenerated with current meal plan.",
-      action: onNavigateToShopping ? (
-        <ToastAction altText="View Shopping List" onClick={onNavigateToShopping}>
-          View Shopping List
-        </ToastAction>
-      ) : undefined
-    });
+    
+    // Add small delay to ensure shopping list is updated before showing toast
+    setTimeout(() => {
+      const itemCount = currentShoppingList?.items?.length || 0;
+      toast({
+        title: "Shopping list updated!",
+        description: itemCount > 0 
+          ? `Updated shopping list with ${itemCount} missing ingredients.`
+          : "All ingredients are now available in your pantry!",
+        action: onNavigateToShopping && itemCount > 0 ? (
+          <ToastAction altText="View Shopping List" onClick={onNavigateToShopping}>
+            View Shopping List
+          </ToastAction>
+        ) : undefined
+      });
+    }, 100);
   };
 
   return (
@@ -115,7 +129,7 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
                         className="text-blue-600 border-blue-600 hover:bg-blue-50"
                       >
                         <ShoppingCart className="w-4 h-4 mr-2" />
-                        View Shopping List
+                        View Shopping List ({currentShoppingList.items.length} items)
                       </Button>
                       <Button 
                         variant="outline"

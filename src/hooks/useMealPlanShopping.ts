@@ -81,13 +81,18 @@ export const useMealPlanShopping = (
   const generateShoppingListForPlan = (weekPlan: WeeklyMealPlan, recipes: Recipe[]) => {
     if (!weekPlan) return;
 
+    console.log('Generating shopping list for week plan:', weekPlan.id);
+    console.log('Available ingredients:', ingredients.length);
+    console.log('Available recipes:', recipes.length);
+
     const shoppingList = generateShoppingList(weekPlan, recipes, ingredients);
+    
+    console.log('Generated shopping list:', shoppingList);
+    console.log('Shopping list items:', shoppingList.items.length);
+
     setCurrentShoppingList(shoppingList);
 
-    toast({
-      title: "Shopping list created!",
-      description: `Generated shopping list with ${shoppingList.items.length} missing ingredients`,
-    });
+    // Don't show toast here - let the caller handle it for better timing
   };
 
   const toggleShoppingListItem = (itemId: string) => {
@@ -100,10 +105,13 @@ export const useMealPlanShopping = (
       )
     };
 
+    console.log('Toggling shopping list item:', itemId);
     setCurrentShoppingList(updatedList);
   };
 
   const addShoppingItemToPantry = (item: ShoppingListItem, quantity: number) => {
+    console.log('Adding to pantry:', item.ingredientName, quantity, item.unit);
+    
     // Check if ingredient already exists in pantry
     const existingIngredientIndex = ingredients.findIndex(ing =>
       ing.name.toLowerCase() === item.ingredientName.toLowerCase()
@@ -118,6 +126,7 @@ export const useMealPlanShopping = (
           ? { ...ing, quantity: ing.quantity + quantity }
           : ing
       );
+      console.log('Updated existing ingredient:', updatedIngredients[existingIngredientIndex]);
     } else {
       // Add new ingredient to pantry with appropriate category
       const category = determineIngredientCategory(item.ingredientName);
@@ -131,6 +140,7 @@ export const useMealPlanShopping = (
         category
       };
       updatedIngredients = [...ingredients, newIngredient];
+      console.log('Added new ingredient:', newIngredient);
     }
 
     onUpdateIngredients(updatedIngredients);
