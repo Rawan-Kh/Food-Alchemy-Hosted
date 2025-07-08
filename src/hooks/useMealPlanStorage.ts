@@ -31,6 +31,8 @@ export const useMealPlanStorage = () => {
   useEffect(() => {
     if (currentWeekPlan) {
       localStorage.setItem('meal-planner-current', JSON.stringify(currentWeekPlan));
+    } else {
+      localStorage.removeItem('meal-planner-current');
     }
   }, [currentWeekPlan]);
 

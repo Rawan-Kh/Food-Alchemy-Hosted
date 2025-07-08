@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Plus, X } from 'lucide-react';
+import { Calendar, Plus, X, RefreshCw, ShoppingCart } from 'lucide-react';
 import { MealPlanGrid } from './MealPlanGrid';
 import { MealPlanHistoryDropdown } from './MealPlanHistoryDropdown';
 import { Recipe } from './RecipeManager';
@@ -51,6 +52,19 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
     });
   };
 
+  const handleRegenerateShoppingList = () => {
+    generateShoppingListForPlan();
+    toast({
+      title: "Shopping list updated!",
+      description: "Your shopping list has been regenerated with current meal plan.",
+      action: onNavigateToShopping ? (
+        <ToastAction altText="View Shopping List" onClick={onNavigateToShopping}>
+          View Shopping List
+        </ToastAction>
+      ) : undefined
+    });
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -85,13 +99,34 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
                   </p>
                 </div>
                 <div className="flex gap-2 flex-wrap mt-6">
-                  <Button 
-                    variant="outline" 
-                    onClick={handleGenerateShoppingList} 
-                    disabled={!!currentShoppingList}
-                  >
-                    {currentShoppingList ? 'Shopping List Generated' : 'Generate Shopping List'}
-                  </Button>
+                  {!currentShoppingList ? (
+                    <Button 
+                      onClick={handleGenerateShoppingList}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <ShoppingCart className="w-4 h-4 mr-2" />
+                      Generate Shopping List
+                    </Button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="outline"
+                        onClick={() => onNavigateToShopping?.()}
+                        className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                      >
+                        <ShoppingCart className="w-4 h-4 mr-2" />
+                        View Shopping List
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={handleRegenerateShoppingList}
+                        className="text-green-600 border-green-600 hover:bg-green-50"
+                      >
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Regenerate List
+                      </Button>
+                    </div>
+                  )}
                   <Button 
                     variant="outline" 
                     onClick={cancelMealPlan} 
