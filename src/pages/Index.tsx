@@ -22,7 +22,7 @@ const generateUniqueId = () => {
 const Index = () => {
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [matchFilter, setMatchFilter] = useState(50);
+  const [matchFilter, setMatchFilter] = useState(0); // Changed from 50 to 0 for "any match"
   const [activeTab, setActiveTab] = useState('home');
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [showRecipeModal, setShowRecipeModal] = useState(false);
