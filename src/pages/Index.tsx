@@ -286,6 +286,7 @@ const Index = () => {
             onToggleItem={mealPlanner.toggleShoppingListItem}
             onAddToPantry={mealPlanner.addShoppingItemToPantry}
             onCompleteShoppingList={mealPlanner.completeShoppingList}
+            onClearAllItems={mealPlanner.clearAllShoppingItems}
           />
         );
       default:
