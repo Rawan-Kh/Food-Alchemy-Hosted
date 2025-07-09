@@ -1,4 +1,3 @@
-
 import { Recipe } from '@/components/RecipeManager';
 import { Ingredient } from '@/components/CategorizedIngredientManager';
 import { useMealPlanStorage } from './useMealPlanStorage';
@@ -153,8 +152,17 @@ export const useMealPlanner = (
   };
 
   const generateShoppingListForCurrentPlan = () => {
+    console.log('generateShoppingListForCurrentPlan called');
+    console.log('Current week plan:', currentWeekPlan);
+    console.log('Current ingredients:', ingredients);
+    console.log('Current shopping list before generation:', currentShoppingList);
+    
     if (currentWeekPlan) {
-      generateShoppingListForPlan(currentWeekPlan, recipes);
+      const generatedList = generateShoppingListForPlan(currentWeekPlan, recipes);
+      console.log('Generated shopping list returned:', generatedList);
+      console.log('Current shopping list after generation:', currentShoppingList);
+    } else {
+      console.log('No current week plan available for shopping list generation');
     }
   };
 

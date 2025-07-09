@@ -88,18 +88,22 @@ export const useMealPlanShopping = (
     console.log('Week plan ID:', weekPlan.id);
     console.log('Available ingredients:', ingredients.length);
     console.log('Available recipes:', recipes.length);
+    console.log('Current shopping list before generation:', currentShoppingList);
 
     // Generate new shopping list
     const shoppingList = generateShoppingList(weekPlan, recipes, ingredients);
     
+    console.log('Generated shopping list:', shoppingList);
     console.log('Generated shopping list with items:', shoppingList.items.length);
     shoppingList.items.forEach(item => {
       console.log(`- ${item.ingredientName}: missing ${item.missingQuantity} ${item.unit} (from recipes: ${item.recipeNames.join(', ')})`);
     });
-    console.log('=== SHOPPING LIST GENERATION END ===');
 
     // Always set the new shopping list, replacing any existing one
     setCurrentShoppingList(shoppingList);
+    
+    console.log('Shopping list set in state. Current list after setting:', shoppingList);
+    console.log('=== SHOPPING LIST GENERATION END ===');
 
     return shoppingList;
   };

@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -38,7 +37,16 @@ export const ShoppingListManager: React.FC<ShoppingListManagerProps> = ({
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const { toast } = useToast();
 
+  useEffect(() => {
+    console.log('ShoppingListManager received shopping list:', shoppingList);
+    if (shoppingList) {
+      console.log('Shopping list items count:', shoppingList.items.length);
+      console.log('Shopping list items:', shoppingList.items);
+    }
+  }, [shoppingList]);
+
   if (!shoppingList) {
+    console.log('ShoppingListManager: No shopping list provided, showing empty state');
     return (
       <Card>
         <CardContent className="text-center py-12">
@@ -59,6 +67,8 @@ export const ShoppingListManager: React.FC<ShoppingListManagerProps> = ({
   const totalItems = shoppingList.items.length;
   const checkedItems = shoppingList.items.filter(item => item.isChecked).length;
   const completionPercentage = totalItems > 0 ? Math.round((checkedItems / totalItems) * 100) : 0;
+
+  console.log('ShoppingListManager: Rendering with', totalItems, 'items');
 
   const handleAddToPantry = (item: ShoppingListItem) => {
     const quantity = quantities[item.id] || item.missingQuantity;
