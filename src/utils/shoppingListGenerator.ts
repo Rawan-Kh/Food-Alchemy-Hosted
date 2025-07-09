@@ -8,30 +8,141 @@ const generateUniqueId = () => {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 };
 
+// Improved ingredient name cleaning function
+const cleanIngredientName = (name: string): string => {
+  let cleaned = name.trim();
+  
+  // Remove common prefixes that describe quantity/measurement
+  const prefixesToRemove = [
+    /^\d+\s*tablespoons?\s*/i,
+    /^\d+\s*teaspoons?\s*/i,
+    /^\d+\s*cups?\s*/i,
+    /^\d+\s*pounds?\s*/i,
+    /^\d+\s*ounces?\s*/i,
+    /^\d+\s*grams?\s*/i,
+    /^\d+\s*kilograms?\s*/i,
+    /^\d+\s*milliliters?\s*/i,
+    /^\d+\s*liters?\s*/i,
+    /^large\s*/i,
+    /^medium\s*/i,
+    /^small\s*/i,
+    /^fresh\s*/i,
+    /^dried\s*/i,
+    /^whole\s*/i,
+    /^ground\s*/i,
+    /^chopped\s*/i,
+    /^diced\s*/i,
+    /^sliced\s*/i,
+    /^undefined\s*/i,
+    /^tablespoon\s*/i,
+    /^teaspoon\s*/i,
+  ];
+  
+  prefixesToRemove.forEach(prefix => {
+    cleaned = cleaned.replace(prefix, '');
+  });
+  
+  // Remove parenthetical descriptions and extra info
+  cleaned = cleaned.replace(/\([^)]*\)/g, ''); // Remove anything in parentheses
+  cleaned = cleaned.replace(/,.*$/g, ''); // Remove everything after first comma
+  cleaned = cleaned.replace(/\s+/g, ' '); // Normalize whitespace
+  cleaned = cleaned.trim();
+  
+  // Remove leading/trailing articles and descriptors
+  cleaned = cleaned.replace(/^(a|an|the)\s+/i, '');
+  cleaned = cleaned.replace(/\s+(or\s+more|plus\s+more|extra).*$/i, '');
+  
+  return cleaned.toLowerCase();
+};
+
+// Enhanced unit normalization
+const normalizeUnit = (unit: string, quantity: number): { unit: string; quantity: number } => {
+  const unitLower = unit.toLowerCase().trim();
+  
+  // Handle common unit conversions and normalizations
+  const unitMappings: Record<string, string> = {
+    'pcs': 'pieces',
+    'pc': 'pieces',
+    'piece': 'pieces',
+    'tbsp': 'tablespoons',
+    'tablespoon': 'tablespoons',
+    'tsp': 'teaspoons',
+    'teaspoon': 'teaspoons',
+    'cup': 'cups',
+    'lb': 'pounds',
+    'pound': 'pounds',
+    'oz': 'ounces',
+    'ounce': 'ounces',
+    'g': 'grams',
+    'gram': 'grams',
+    'kg': 'kilograms',
+    'kilogram': 'kilograms',
+    'ml': 'milliliters',
+    'milliliter': 'milliliters',
+    'l': 'liters',
+    'liter': 'liters',
+  };
+  
+  const normalizedUnit = unitMappings[unitLower] || unitLower;
+  
+  // Handle plural/singular consistency
+  if (quantity === 1) {
+    if (normalizedUnit === 'pieces') return { unit: 'piece', quantity };
+    if (normalizedUnit === 'tablespoons') return { unit: 'tablespoon', quantity };
+    if (normalizedUnit === 'teaspoons') return { unit: 'teaspoon', quantity };
+    if (normalizedUnit === 'cups') return { unit: 'cup', quantity };
+  }
+  
+  return { unit: normalizedUnit, quantity };
+};
+
 // Improved ingredient matching function
 const findMatchingIngredient = (requiredName: string, availableIngredients: Ingredient[]): Ingredient | undefined => {
-  const normalizedRequired = requiredName.toLowerCase().trim();
+  const cleanRequired = cleanIngredientName(requiredName);
   
-  // First try exact match
+  console.log(`Looking for ingredient: "${requiredName}" -> cleaned: "${cleanRequired}"`);
+  
+  // First try exact match on cleaned names
   let match = availableIngredients.find(ing => 
-    ing.name.toLowerCase().trim() === normalizedRequired
+    cleanIngredientName(ing.name) === cleanRequired
   );
   
-  if (match) return match;
+  if (match) {
+    console.log(`Found exact match: ${match.name}`);
+    return match;
+  }
   
-  // Then try partial matches - ingredient name contains required name
-  match = availableIngredients.find(ing => 
-    ing.name.toLowerCase().includes(normalizedRequired)
-  );
+  // Then try partial matches - available ingredient contains required name
+  match = availableIngredients.find(ing => {
+    const cleanAvailable = cleanIngredientName(ing.name);
+    return cleanAvailable.includes(cleanRequired) || cleanRequired.includes(cleanAvailable);
+  });
   
-  if (match) return match;
+  if (match) {
+    console.log(`Found partial match: ${match.name}`);
+    return match;
+  }
   
-  // Finally try reverse - required name contains ingredient name
-  match = availableIngredients.find(ing => 
-    normalizedRequired.includes(ing.name.toLowerCase())
-  );
+  // Try word-based matching for compound ingredients
+  const requiredWords = cleanRequired.split(' ').filter(word => word.length > 2);
+  if (requiredWords.length > 0) {
+    match = availableIngredients.find(ing => {
+      const availableWords = cleanIngredientName(ing.name).split(' ');
+      return requiredWords.some(reqWord => 
+        availableWords.some(availWord => 
+          availWord.includes(reqWord) || reqWord.includes(availWord)
+        )
+      );
+    });
+    
+    if (match) {
+      console.log(`Found word-based match: ${match.name} for ${requiredName}`);
+      return match;
+    }
+  }
   
-  return match;
+  console.log(`No match found for: ${requiredName}`);
+  return undefined;
 };
 
 export const generateShoppingList = (
@@ -48,7 +159,8 @@ export const generateShoppingList = (
     quantity: number;
     unit: string;
     recipeNames: string[];
-    originalName: string; // Keep track of original name
+    originalName: string;
+    cleanedName: string;
   }>();
 
   // Collect all required ingredients from recipes in the meal plan
@@ -62,40 +174,30 @@ export const generateShoppingList = (
           console.log(`Processing recipe: ${recipe.name} with ${recipe.ingredients.length} ingredients`);
           
           recipe.ingredients.forEach(recipeIngredient => {
-            const normalizedKey = recipeIngredient.name.toLowerCase().trim();
+            const cleanedName = cleanIngredientName(recipeIngredient.name);
+            const { unit: normalizedUnit, quantity: normalizedQuantity } = normalizeUnit(
+              recipeIngredient.unit, 
+              recipeIngredient.quantity
+            );
             
-            if (requiredIngredients.has(normalizedKey)) {
-              const existing = requiredIngredients.get(normalizedKey)!;
-              // Only add quantity if units match
-              if (existing.unit === recipeIngredient.unit) {
-                existing.quantity += recipeIngredient.quantity;
-                if (!existing.recipeNames.includes(recipe.name)) {
-                  existing.recipeNames.push(recipe.name);
-                }
-              } else {
-                // Create a new key with unit suffix for different units
-                const unitKey = `${normalizedKey}_${recipeIngredient.unit}`;
-                if (requiredIngredients.has(unitKey)) {
-                  const existingUnit = requiredIngredients.get(unitKey)!;
-                  existingUnit.quantity += recipeIngredient.quantity;
-                  if (!existingUnit.recipeNames.includes(recipe.name)) {
-                    existingUnit.recipeNames.push(recipe.name);
-                  }
-                } else {
-                  requiredIngredients.set(unitKey, {
-                    quantity: recipeIngredient.quantity,
-                    unit: recipeIngredient.unit,
-                    recipeNames: [recipe.name],
-                    originalName: recipeIngredient.name
-                  });
-                }
+            // Create a unique key that includes the unit to handle different unit types
+            const ingredientKey = `${cleanedName}__${normalizedUnit}`;
+            
+            console.log(`Processing ingredient: "${recipeIngredient.name}" -> "${cleanedName}" (${normalizedQuantity} ${normalizedUnit})`);
+            
+            if (requiredIngredients.has(ingredientKey)) {
+              const existing = requiredIngredients.get(ingredientKey)!;
+              existing.quantity += normalizedQuantity;
+              if (!existing.recipeNames.includes(recipe.name)) {
+                existing.recipeNames.push(recipe.name);
               }
             } else {
-              requiredIngredients.set(normalizedKey, {
-                quantity: recipeIngredient.quantity,
-                unit: recipeIngredient.unit,
+              requiredIngredients.set(ingredientKey, {
+                quantity: normalizedQuantity,
+                unit: normalizedUnit,
                 recipeNames: [recipe.name],
-                originalName: recipeIngredient.name
+                originalName: recipeIngredient.name,
+                cleanedName
               });
             }
           });
@@ -111,50 +213,46 @@ export const generateShoppingList = (
   const shoppingListItems: ShoppingListItem[] = [];
 
   requiredIngredients.forEach((required, ingredientKey) => {
-    // Extract original ingredient name (remove unit suffix if present)
-    const ingredientName = ingredientKey.includes('_') && 
-      ['g', 'kg', 'ml', 'l', 'cups', 'tbsp', 'tsp', 'pcs', 'pieces'].some(unit => ingredientKey.endsWith(`_${unit}`))
-      ? ingredientKey.substring(0, ingredientKey.lastIndexOf('_'))
-      : ingredientKey;
-
-    // Use the original name from the recipe for display
-    const displayName = required.originalName;
-
-    const availableIngredient = findMatchingIngredient(ingredientName, ingredients);
+    const availableIngredient = findMatchingIngredient(required.cleanedName, ingredients);
     
     let availableQuantity = 0;
+    let hasCompatibleUnit = false;
     
     if (availableIngredient) {
-      // Only subtract if units match, otherwise treat as unavailable
-      if (availableIngredient.unit === required.unit) {
+      const { unit: availableNormalizedUnit } = normalizeUnit(availableIngredient.unit, availableIngredient.quantity);
+      
+      // Check if units are compatible
+      if (availableNormalizedUnit === required.unit) {
         availableQuantity = availableIngredient.quantity;
+        hasCompatibleUnit = true;
+        console.log(`Found compatible ingredient: ${availableIngredient.name} (${availableQuantity} ${availableNormalizedUnit})`);
       } else {
-        console.log(`Unit mismatch for '${displayName}': required ${required.unit}, available ${availableIngredient.unit}`);
+        console.log(`Unit mismatch for '${required.originalName}': required ${required.unit}, available ${availableNormalizedUnit}`);
       }
-    } else {
-      console.log(`No matching ingredient found for '${displayName}'`);
     }
 
     const missingQuantity = Math.max(0, required.quantity - availableQuantity);
 
-    // Only add to shopping list if we actually need more
-    if (missingQuantity > 0) {
+    // Add to shopping list if we need more (or if no compatible ingredient found)
+    if (missingQuantity > 0 || (!hasCompatibleUnit && availableIngredient)) {
+      const displayQuantity = hasCompatibleUnit ? missingQuantity : required.quantity;
+      
       const item: ShoppingListItem = {
         id: generateUniqueId(),
-        ingredientName: displayName,
+        ingredientName: required.originalName,
         requiredQuantity: required.quantity,
         unit: required.unit,
-        availableQuantity,
-        missingQuantity,
-        recipeNames: [...new Set(required.recipeNames)], // Remove duplicates
+        availableQuantity: hasCompatibleUnit ? availableQuantity : 0,
+        missingQuantity: displayQuantity,
+        recipeNames: [...new Set(required.recipeNames)],
         isChecked: false,
         dateAdded: new Date().toISOString()
       };
       
       shoppingListItems.push(item);
-      console.log(`Added to shopping list: ${displayName} - missing ${missingQuantity} ${required.unit}`);
+      console.log(`Added to shopping list: ${required.originalName} - missing ${displayQuantity} ${required.unit}`);
     } else {
-      console.log(`Skipped ${displayName} - have enough (${availableQuantity} ${required.unit})`);
+      console.log(`Skipped ${required.originalName} - have enough (${availableQuantity} ${required.unit})`);
     }
   });
 
