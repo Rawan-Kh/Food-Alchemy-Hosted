@@ -166,10 +166,26 @@ export const useMealPlanShopping = (
     });
   };
 
+  const clearAllShoppingItems = () => {
+    if (!currentShoppingList) return;
+
+    const clearedList = {
+      ...currentShoppingList,
+      items: []
+    };
+
+    setCurrentShoppingList(clearedList);
+    toast({
+      title: "Shopping list cleared!",
+      description: "All items have been removed from your shopping list",
+    });
+  };
+
   return {
     generateShoppingListForPlan,
     toggleShoppingListItem,
     addShoppingItemToPantry,
-    completeShoppingList
+    completeShoppingList,
+    clearAllShoppingItems
   };
 };

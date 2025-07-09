@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { History, ChevronDown, Trash2 } from 'lucide-react';
+import { History, ChevronDown, Trash2, X } from 'lucide-react';
 import { MealPlanHistory as MealPlanHistoryType } from '@/types/mealPlanner';
 import { Recipe } from './RecipeManager';
 import { DAYS_OF_WEEK } from '@/types/mealPlanner';
@@ -25,12 +25,14 @@ interface MealPlanHistoryDropdownProps {
   history: MealPlanHistoryType[];
   getRecipeById: (id: string) => Recipe | undefined;
   onDeleteHistory: (historyId: string) => void;
+  onClearAllHistory: () => void;
 }
 
 export const MealPlanHistoryDropdown: React.FC<MealPlanHistoryDropdownProps> = ({
   history,
   getRecipeById,
-  onDeleteHistory
+  onDeleteHistory,
+  onClearAllHistory
 }) => {
   const [selectedPlanId, setSelectedPlanId] = useState<string>('');
   const [isExpanded, setIsExpanded] = useState(false);
@@ -56,10 +58,42 @@ export const MealPlanHistoryDropdown: React.FC<MealPlanHistoryDropdownProps> = (
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <History className="w-5 h-5" />
-          Meal Plan History ({history.length})
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <History className="w-5 h-5" />
+            Meal Plan History ({history.length})
+          </CardTitle>
+          {history.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                  <X className="w-4 h-4 mr-2" />
+                  Clear All
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Clear All History</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to clear all meal plan history? This will remove all {history.length} entries and cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => {
+                      onClearAllHistory();
+                      setSelectedPlanId('');
+                    }}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Clear All
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

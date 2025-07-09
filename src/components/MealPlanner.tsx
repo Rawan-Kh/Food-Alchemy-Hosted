@@ -36,7 +36,8 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
     cancelMealPlan,
     generateShoppingListForPlan,
     getRecipeById,
-    deleteFromHistory
+    deleteFromHistory,
+    clearAllHistory
   } = useMealPlanner(recipes, ingredients, onUpdateIngredients);
 
   const handleGenerateShoppingList = () => {
@@ -138,6 +139,7 @@ export const MealPlanner: React.FC<MealPlannerProps> = ({
         history={mealPlanHistory} 
         getRecipeById={getRecipeById} 
         onDeleteHistory={deleteFromHistory} 
+        onClearAllHistory={clearAllHistory}
       />
     </div>
   );

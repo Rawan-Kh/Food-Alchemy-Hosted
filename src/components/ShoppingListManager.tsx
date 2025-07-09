@@ -5,22 +5,35 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
-import { ShoppingCart, Plus, Check, Calendar } from 'lucide-react';
+import { ShoppingCart, Plus, Check, Calendar, X } from 'lucide-react';
 import { ShoppingList, ShoppingListItem } from '@/types/shoppingList';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface ShoppingListManagerProps {
   shoppingList: ShoppingList | null;
   onToggleItem: (itemId: string) => void;
   onAddToPantry: (item: ShoppingListItem, quantity: number) => void;
   onCompleteShoppingList: () => void;
+  onClearAllItems: () => void;
 }
 
 export const ShoppingListManager: React.FC<ShoppingListManagerProps> = ({
   shoppingList,
   onToggleItem,
   onAddToPantry,
-  onCompleteShoppingList
+  onCompleteShoppingList,
+  onClearAllItems
 }) => {
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const { toast } = useToast();
@@ -76,6 +89,33 @@ export const ShoppingListManager: React.FC<ShoppingListManagerProps> = ({
             <Badge variant="secondary" className="text-sm">
               {completionPercentage}% complete
             </Badge>
+            {totalItems > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="text-destructive hover:text-destructive">
+                    <X className="w-4 h-4 mr-2" />
+                    Clear All
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Clear Shopping List</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to clear all items from your shopping list? This will remove all {totalItems} items and cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={onClearAllItems}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Clear All
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
             {completionPercentage === 100 && (
               <Button onClick={onCompleteShoppingList} size="sm" className="bg-green-600 hover:bg-green-700">
                 <Check className="w-4 h-4 mr-2" />

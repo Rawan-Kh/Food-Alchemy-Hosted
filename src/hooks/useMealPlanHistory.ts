@@ -35,8 +35,18 @@ export const useMealPlanHistory = (
     });
   };
 
+  const clearAllHistory = () => {
+    setMealPlanHistory([]);
+
+    toast({
+      title: "All history cleared",
+      description: "All meal plan history has been removed.",
+    });
+  };
+
   return {
     addToHistory,
-    deleteFromHistory
+    deleteFromHistory,
+    clearAllHistory
   };
 };
